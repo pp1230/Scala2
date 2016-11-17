@@ -9,6 +9,9 @@ import scala.collection.mutable
 
 /**
   * Created by pi on 16-11-15.
+  * 使用Vector的foreachActive方法提取idf.
+  * 最後生成的Map（特徵，idf）
+  * 問題：特徵相同的idf被覆蓋值
   */
 class TFIDFTest2 {
 
@@ -53,7 +56,36 @@ object TFIDFTest2{
     //println(doubleVectors)
     val normalVec = vectors.collect()
     normalVec.foreach(println(_))
-    val arr = normalVec.toList
+    val arr = vectors.map(v => v.foreachActive( (a, b) => b))
+    println(arr)
+
+//    val vecs = allDF.select("idfFeatures").rdd.map { case Row(v: Vector) => v}
+//    val first = vecs.first()
+//    val n =first.foreachActive((a, b) => b)
+//    println("---------->"+first+"/"+n)
+
+    //val max =allDF.select("idfFeatures").rdd.map{case Row(myInt:Int, myIntList:Array[Int], myVecList:Array[Double]) => myVecList.toArray.reduce( (a, b) => if (a > b) a else b  )}
+    //max.foreach(println(_))
+
+    var map: Map[Int,Double] = Map()
+    //vectors.first().foreachActive((a,b) => println(a+"/"+b))
+    vectors.first().foreachActive((a,b) => map += (a -> b))
+    println(map.max)
+
+    var maxValue: Map[Int,Double] = Map()
+    var maps: Map[Int,Double] = Map()
+    //Attention to collect method. Execution is lazy when you are not using Action.
+    val vectorCol = vectors.collect()
+    println(vectorCol.length)
+    vectorCol.map(vec => {
+      vec.foreachActive((a,b) => {
+        maps += (a -> b)
+        //println(maps)
+      })
+      maxValue += maps.max
+      maps = Map()
+    })
+    println(maxValue)
 
     val words = allDF.select("words").rdd.map { case Row(v: mutable.WrappedArray[String]) => v}
     words.foreach(println(_))

@@ -31,7 +31,7 @@ object TFIDFAlgorithm{
     val wordsData = tokenizer.transform(sentenceData)
     wordsData.show()
     val hashingTF = new HashingTF().setInputCol("words")
-      .setOutputCol("rawFeatures").setNumFeatures(1000)
+      .setOutputCol("rawFeatures").setNumFeatures(10000)
     val featurizedData = hashingTF.transform(wordsData)
     featurizedData.select("label","rawFeatures").foreach(r => println(r))
 

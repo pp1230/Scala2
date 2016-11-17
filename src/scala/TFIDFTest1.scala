@@ -8,6 +8,7 @@ import scala.reflect.internal.util.TableDef.Column
 
 /**
   * Created by pi on 16-11-14.
+  * 此方法不可取因爲向量計算出來是亂序的，無法順序對應每一個詞。所以計算結果錯誤。
   */
 class TFIDFTest1 {
 
