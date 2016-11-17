@@ -1,7 +1,7 @@
 package scala
 
 import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Row, SparkSession}
 
 /**
   * Created by pi on 16-11-7.
@@ -40,6 +40,9 @@ object TFIDFAlgorithm{
     val rescaleData = idfModel.transform(featurizedData)
     rescaleData.select("label","words","features").take(4).foreach(println)
     rescaleData.show()
+    import org.apache.spark.ml.linalg.Vector
+    import org.apache.spark.sql.Row
+    rescaleData.select("features").rdd.map { case Row(v: Vector) => v}.first
   }
 }
 

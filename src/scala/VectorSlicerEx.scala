@@ -12,11 +12,9 @@ import java.util.Arrays
 import org.apache.spark.ml.attribute.{Attribute, AttributeGroup, NumericAttribute}
 import org.apache.spark.ml.feature.VectorSlicer
 import org.apache.spark.ml.linalg.Vectors
+
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.ArrayType
-import org.apache.spark.sql.types.DoubleType
-import org.apache.spark.sql.types.StructField
 import org.apache.spark.sql.types.StructType
 
 
@@ -29,7 +27,8 @@ object VectorSlicerEx {
       .getOrCreate()
 
     // $example on$
-    val data = Arrays.asList(Row(Vectors.dense(-1.0, 2.3, 3.0)))
+    //val data = Arrays.asList(Row(Vectors.dense(-1.0, 2.3, 3.0)))
+    val data = Arrays.asList(Row(Vectors.sparse(2, Array(1, 2), Array(3, 4))))
 
     val defaultAttr = NumericAttribute.defaultAttr
     val attrs = Array("f1", "f2", "f3").map(defaultAttr.withName)

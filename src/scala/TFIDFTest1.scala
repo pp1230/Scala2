@@ -1,5 +1,6 @@
 package scala
 
+import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.{IDF, HashingTF, Tokenizer}
 import org.apache.spark.sql.{Row, SparkSession, Column}
 import scala.collection.mutable
@@ -20,6 +21,7 @@ object TFIDFTest1{
       .master("local[*]").getOrCreate()
     import spark.implicits._
     val reviewDF = spark.read.json("/home/pi/Documents/DataSet/dataset/yelp_review_test.json")
+    //val reviewDF = spark.read.json("/home/pi/Documents/DataSet/dataset/short_review.json")
     //reviewDF.show()
     val tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
     val wordsData = tokenizer.transform(reviewDF)
@@ -70,19 +72,24 @@ object TFIDFTest1{
     val preDF = idfFeatures2.join(totalFeatureDF,$"review_id1" === $"review_id")
     preDF.show()
 
-    preDF.foreach(println(_))
+    //preDF.foreach(println(_))
 
-    val map = preDF.select("words","idf").map{
+    val result = preDF.select("words","idf").map{
      case Row(words:mutable.WrappedArray[String],idf:String) =>
-        val key = words
+        val key = words.map(_.replace(",","").replace(".",""))
         val value = idf.split(",")
         var map: Map[String,String] = Map()
-        for (i <- 0 to 10){
-          map += (words.array(i)->value(i))
+       //println(key)
+       //value.foreach(println(_))
+       var j = 0
+        for ( i <- key if j < value.size){
+          map += (i->value(j))
+          //println(i +"/"+value(j))
+          j+=1
         }
-        map.toString()
+        map.toList.sortBy(_._2)
     }
-    map.foreach(m => println(m))
+    result.foreach(m => println(m))
     //preDF.write.save("/home/pi/Documents/DataSet/dataset/yelp_review_test")
   }
 }

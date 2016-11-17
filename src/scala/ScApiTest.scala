@@ -37,6 +37,7 @@ object ScApiTest{
     rdd3.foreach(i => println(i))
     rdd5.foreach(i => println(i))
 
+
     /**
       * 运行结果1
       * (haha,1)
@@ -104,6 +105,43 @@ object ScApiTest{
     val mapPartitionsRdd = sc.parallelize(stringArrayData).mapPartitions(_.map(_.split(" ")))
     mapPartitionsRdd.foreach(_.foreach(println(_)))
 
+    //val rdd6 = sc.makeRDD(Array(3,5,8),3)
+    val rdd6 = sc.parallelize(Vector(0,(1,2,3),(4,5,6)))
+    println(rdd6)
+    val rdd7 = rdd6.mapPartitions {
+      x => {
+
+        var result = List[String]()
+        var i = ""
+        var j = ""
+        while (x.hasNext) {
+          j = x.next().toString
+          i = j
+          println("---------->"+i+"/"+j)
+        }
+        result.::(i).iterator
+
+      }
+    }
+    println("---------->1"+rdd7.first())
+    rdd7.foreach(r => println("---------->2"+r))
+    println("---------->3"+rdd7.collect().apply(2))
+
+    val rdd8 = rdd6.mapPartitionsWithIndex{
+      (index,x) =>{
+
+        var result = List[String]()
+        var i = ""
+        var j = ""
+        while (x.hasNext) {
+          j = x.next().toString
+          i = j
+          println("---------->"+i+"/"+j)
+        }
+        result.::(index).::(i).iterator
+      }
+    }
+    rdd8.foreach(r => println("---------->4"+r))
     /**
       * mapPartitionsWithIndex(func)
       * Similar to mapPartitions, but also provides func with an integer value representing the index of the partition,

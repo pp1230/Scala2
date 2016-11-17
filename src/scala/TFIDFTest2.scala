@@ -1,7 +1,11 @@
 package scala
 
 import org.apache.spark.ml.feature.{VectorAssembler, IDF, HashingTF, Tokenizer}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.ml.linalg.{SparseVector, Matrices, Matrix}
+import org.apache.spark.sql.{Row, SparkSession}
+
+import scala.collection.mutable
+
 
 /**
   * Created by pi on 16-11-15.
@@ -28,10 +32,30 @@ object TFIDFTest2{
     val idfModel = idf.fit(tfFeatures)
     val allDF = idfModel.transform(tfFeatures)
     allDF.show()
-    val assambler = new VectorAssembler().setInputCols(Array("stars","idfFeatures")).setOutputCol("wordFeatures")
-    val wordsFeatures = assambler.transform(allDF)
-    wordsFeatures.show()
-    val featureDF = wordsFeatures.select("wordFeatures")
-    featureDF.foreach(println(_))
+//    val assambler = new VectorAssembler().setInputCols(Array("stars","idfFeatures")).setOutputCol("wordFeatures")
+//    val wordsFeatures = assambler.transform(allDF)
+//    wordsFeatures.show()
+//    val featureDF = wordsFeatures.select("wordFeatures")
+//    featureDF.foreach(println(_))
+
+//    val vectors = allDF.select("idfFeatures").rdd.map{
+//      case Row(vector: Vector) =>
+//        vector
+//    }
+//    vectors.foreach(println(_))
+    import org.apache.spark.ml.linalg.Vector
+    val vectors = allDF.select("idfFeatures").rdd.map { case Row(v: Vector) => v}
+    vectors.foreach(println(_))
+    //val mt:Matrix = Matrices.dense(vectors)
+    //case class Feature(dimention: String, tf: Array[Double], idf: Array[Double])
+//    val doubleVectors = vectors.map(vec => spark.sparkContext.parallelize(vec.toArray))
+//    doubleVectors.foreach(r => println(r.collect()))
+    //println(doubleVectors)
+    val normalVec = vectors.collect()
+    normalVec.foreach(println(_))
+    val arr = normalVec.toList
+
+    val words = allDF.select("words").rdd.map { case Row(v: mutable.WrappedArray[String]) => v}
+    words.foreach(println(_))
   }
 }
