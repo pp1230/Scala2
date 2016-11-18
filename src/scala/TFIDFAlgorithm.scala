@@ -43,6 +43,11 @@ object TFIDFAlgorithm{
     import org.apache.spark.ml.linalg.Vector
     import org.apache.spark.sql.Row
     rescaleData.select("features").rdd.map { case Row(v: Vector) => v}.first
+
+    //start1:get a value in df.
+//    val value =rescaleData.select("label").rdd.map{case Row(i:Int)=> i}.first()
+//    println("---------->"+value)
+    //end1
   }
 }
 
