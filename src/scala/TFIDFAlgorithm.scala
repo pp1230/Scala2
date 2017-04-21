@@ -47,7 +47,9 @@ object TFIDFAlgorithm{
     //start1:get a value in df.
 //    val value =rescaleData.select("label").rdd.map{case Row(i:Int)=> i}.first()
 //    println("---------->"+value)
+//    rescaleData.select("label").limit(1).show()
     //end1
+
   }
 }
 
