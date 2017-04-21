@@ -43,32 +43,34 @@ object ALSModel{
 
 
     // Build the recommendation model using ALS on the training data
-    val readdata = ss.read.csv("/home/pi/Documents/DataSet/dataset/yelp_academic_dataset_review_matrix1.csv")
+    val readdata = ss.read.csv("/home/pi/doc/dataset/yelp_academic_dataset_review_matrix1.csv/")
     readdata.show()
     val data = readdata
       .map(r=>Rating(r(0).toString,r(1).toString,r(2).toString))
-      .map(parseRaing)
-      .sort("business_id","user_id")
+      .map(parseRaing).toDF()
     data.show(1000)
     val Array(training, testing) = data.randomSplit(Array(0.8,0.2))
-    training.show(1000)
-    testing.show(1000)
-//    val als = new ALS()
-//      .setMaxIter(5)
-//      .setRegParam(0.01)
-//      .setUserCol("user_id")
-//      .setItemCol("business_id")
-//      .setRatingCol("stars")
-//    val model = als.fit(training)
-//
-//    // Evaluate the model by computing the RMSE on the test data
-//    val predictions = model.transform(testing)
-//    predictions.sort("user_id").show(1000)
-//    val evaluator = new RegressionEvaluator()
-//      .setMetricName("rmse")
-//      .setLabelCol("stars")
-//      .setPredictionCol("prediction")
-//    val rmse = evaluator.evaluate(predictions)
-//    println(s"Root-mean-square error = $rmse")
+//    training.show(1000)
+//    testing.show(1000)
+    val als = new ALS()
+      .setMaxIter(15)
+      .setRegParam(0.1)
+      .setUserCol("user_id")
+      .setItemCol("business_id")
+      .setRatingCol("stars")
+    val model = als.fit(training)
+
+    // Evaluate the model by computing the RMSE on the test data
+    val predictions = model.transform(testing)
+    predictions.sort("user_id").show(1000)
+    predictions.createOrReplaceTempView("drop")
+    val drop = ss.sql("select * from drop where prediction != 'NaN'")
+    drop.show(1000)
+    val evaluator = new RegressionEvaluator()
+      .setMetricName("rmse")
+      .setLabelCol("stars")
+      .setPredictionCol("prediction")
+    val rmse = evaluator.evaluate(drop)
+    println(s"Root-mean-square error = $rmse")
   }
 }
