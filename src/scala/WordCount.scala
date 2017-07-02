@@ -1,6 +1,6 @@
 package scala
 
-import org.apache.spark.sql.SparkSession
+import org.apache.commons.net.ntp.TimeStamp
 import org.apache.spark.{SparkContext, SparkConf}
 
 /**
@@ -12,37 +12,48 @@ class WordCount {
 
 object WordCount{
   def main(args: Array[String]) {
-    var conf = new SparkConf().setAppName("Scapi").setMaster("local[*]")
-    //var conf = new SparkConf().setAppName("Scapi").setMaster("spark://192.168.1.104:4050")
+    var conf = new SparkConf().setAppName("WordCount").setMaster("local[*]")
     var sc = new SparkContext(conf)
     sc.setLogLevel("WARN")
 
-    val input = "a b c b a"
-    val textinput = sc.textFile("/home/pi/Documents/CloudComputing/input.txt")
+   // val rddinput = sc.textFile("hdfs://139.196.27.14:9100/homework/input/input.txt")
+    val textinput = sc.textFile("hdfs://139.196.27.14:9100/homework/input/input.txt").collect()
+    //textinput.foreach(println(_))
 
-    //    val rdd1 = sc.parallelize(input.split(" "))
-    //    val rdd2 = rdd1.map((_,1)).reduceByKey(_+_)
-    //    val rdd3 = rdd2.map(_._1)
-    //    val rdd4 = rdd3.cartesian(rdd3)
-    //    val rdd5 = rdd4.join(rdd2)
-    //    val rdd6 = rdd5.map(r => ((r._2._1,r._1),r._2._2))
-    //    //rdd6.foreach(print(_))
-    //    val rdd7 = rdd6.map(r => {
-    //      if(r._1._1.equals(r._1._2))
-    //        (r._1,1)
-    //      else r})
-    //    rdd7.foreach(print(_))
+//    var rdd = sc.parallelize("".split("")).map((_,0))
+//    val rdd1 = rddinput.map(r => r.replaceAll("[\\pP\\p{Punct}\\d]", "")
+//      .replace("  "," ").toLowerCase.split(" ").map(r => (r,1)))
+//    rdd1.foreach(r => println(r(0)))
 
-    val rdd1 = sc.parallelize(input.split(" ")).map((_, 1)).reduceByKey(_ + _)
-    val rdd2 = rdd1.map(_._1)
-    val rdd3 = rdd2.cartesian(rdd2)
-    val rdd4 = rdd3.join(rdd1).map(r => ((r._2._1, r._1), r._2._2))
-      .map(r => {
-        if (r._1._1.equals(r._1._2))
-          (r._1, 1)
-        else r
+
+//    var result = sc.parallelize("12the, the:".replaceAll("[\\pP\\p{Punct}\\d]", "").split(" "))
+//      .map((_,0)).reduceByKey(_ + _).map(r => ("("+r._1+","+r._1+")",r._2))
+//      //.foreach(print(_))
+    var result = sc.parallelize("".split("")).map((_,0))
+
+    for (i <- 0 to textinput.size - 1) {
+      val rdd1 = sc.parallelize(textinput(i).replaceAll("[\\pP\\p{Punct}\\d]", "")
+        .replace("  "," ").toLowerCase.split(" ")).map((_, 1)).reduceByKey(_ + _).filter(!_._1.equals(""))
+
+      val rdd2 = rdd1.map(_._1)
+      val rdd3 = rdd2.cartesian(rdd2)
+      val rdd4 = rdd3.join(rdd1).map(r => {
+        if(r._2._1.equals(r._1))
+          if(r._2._2 >= 2)
+            ("("+r._2._1+","+ r._1+")", 1)
+        else ("",0)
+        else
+        ("("+r._2._1+","+ r._1+")", r._2._2)
       })
-    rdd4.foreach(print(_))
 
+      //println("------------count line "+i+"---------------")
+      //rdd4.foreach(print(_))
+
+      result = result.++(rdd4)
+      //result.foreach(println(_))
+    }
+    result = result.filter(!_._1.equals("")).reduceByKey(_+_).sortByKey()
+    //result.foreach(println(_))
+    result.saveAsTextFile("hdfs://139.196.27.14:9100/output/wordcount"+TimeStamp.getCurrentTime+".txt")
   }
 }

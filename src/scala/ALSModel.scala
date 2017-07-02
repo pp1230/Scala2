@@ -71,8 +71,8 @@ object ALSModel{
         .setUserCol("user_id")
         .setItemCol("business_id")
         .setRatingCol("stars")
-        .setNonnegative(true)
-        .setNumBlocks(15)
+        //.setNonnegative(true)
+        .setRank(150)
 
       val model = als.fit(training)
 

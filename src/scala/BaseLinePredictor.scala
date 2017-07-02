@@ -22,8 +22,10 @@ object BaseLinePredictor{
       AvgRating(avgRating.tuserId,avgRating.tbusinessId,avgRating.avgScore,avgRating.useravg.toFloat,avgRating.busavg.toFloat)
     }
 
+//    val ss = SparkSession.builder().appName("Yelp Baseline Predictor")
+//      .master("spark://172.31.34.14:6066").getOrCreate()
     val ss = SparkSession.builder().appName("Yelp Baseline Predictor")
-      .master("local[*]").getOrCreate()
+        .master("local[*]").getOrCreate()
     import ss.implicits._
     val orderData = ss.read.csv("/home/pi/Documents/DataSet/dataset/yelp_academic_dataset_review_startimevoteagg.csv")
     //orderData.createOrReplaceTempView("orderdata")
@@ -131,7 +133,7 @@ object BaseLinePredictor{
       .setUserCol("userId")
       .setItemCol("businessId")
       .setRatingCol("residual")
-      .setRank(300)
+      .setRank(500)
 
     val model = als.fit(trainResidual)
 

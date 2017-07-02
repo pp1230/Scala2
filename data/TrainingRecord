@@ -1,0 +1,252 @@
+0.8;0.2
+MaxIter RegParam RMSE MSE R2 MAE
+15 0.1 1.5702125879967546 2.4655675715034655 -0.39147226220763076 1.2158491516570726
+20 0.1 1.5405181216555695 2.3731960831492036 -0.34433294963458105 1.1954726901534258
+15 0.2 1.4562554436537505 2.1206799171711816 -0.2023089050114908 1.138801349830311
+20 0.2 1.4459139010545132 2.0906670092626807 -0.18043033378455187 1.1316370406824614
+15 0.3 1.4193337867177183 2.014508398118457 -0.14234617784964132 1.1209884470118623
+20 0.3 1.4120191447141297 1.9937980650392222 -0.12980431985782226 1.1171774331586988
+20 0.4 1.405684102795368 1.9759477968516188 -0.12124669464502591 1.1234293459297964
+20 0.5 1.4124554942867291 1.9950305233407686 -0.13312152200142946 1.1413003741320422
+20 1 1.609255816800811 2.589704283907246 -0.4689994698836526 1.3763053414812378
+
+0.2Root-mean-square error = 1.403231275452972
+[Stage 193:==================================================>  (191 + 8) / 200]0.2Mean-square error = 1.969058012409375
+0.2r2 = -0.1142785423069268
+0.2MAD--Mean Absolute Difference = 1.106018708113451
+0.23Root-mean-square error = 1.39410371363131
+0.23Mean-square error = 1.9435251643606088
+0.23r2 = -0.0998296512506851
+[Stage 582:==============================================>      (175 + 8) / 200]0.23MAD--Mean Absolute Difference = 1.101824323690435
+0.26Root-mean-square error = 1.3875013359652484
+0.26Mean-square error = 1.9251599573053486
+[Stage 824:=======================================>             (150 + 8) / 200]0.26r2 = -0.08943688678273554
+[Stage 873:====================================================>(198 + 2) / 200]0.26MAD--Mean Absolute Difference = 1.099628202454418
+[Stage 1017:=================================================>  (192 + 8) / 200]0.29000000000000004Root-mean-square error = 1.3829196292893866
+[Stage 1066:========================================>           (156 + 8) / 200]0.29000000000000004Mean-square error = 1.9124667010738945
+[Stage 1115:===============================================>    (183 + 8) / 200]0.29000000000000004r2 = -0.08225384648550893
+[Stage 1164:=========================================>          (158 + 8) / 200]0.29000000000000004MAD--Mean Absolute Difference = 1.0990793202086462
+[Stage 1308:======================================>             (149 + 8) / 200]0.32000000000000006Root-mean-square error = 1.3802019589236172
+0.32000000000000006Mean-square error = 1.9049574474165905
+0.32000000000000006r2 = -0.07800440326629343
+[Stage 1455:==================================================> (194 + 6) / 200]0.32000000000000006MAD--Mean Absolute Difference = 1.0999977221643398
+0.3500000000000001Root-mean-square error = 1.3790089799264589
+[Stage 1648:========================================>           (155 + 8) / 200]0.3500000000000001Mean-square error = 1.9016657667178125
+0.3500000000000001r2 = -0.07614166019439939
+0.3500000000000001MAD--Mean Absolute Difference = 1.102184691950596
+[Stage 1890:=================================================>  (190 + 8) / 200]0.3800000000000001Root-mean-square error = 1.3791147894646976
+[Stage 1939:==========================================>         (164 + 8) / 200]0.3800000000000001Mean-square error = 1.9019576025202571
+[Stage 1988:=========================================>          (160 + 8) / 200]0.3800000000000001r2 = -0.07630680838733861
+0.3800000000000001MAD--Mean Absolute Difference = 1.1055121473688945
+0.41000000000000014Root-mean-square error = 1.3804348466887595
+[Stage 2230:=========================================>          (161 + 8) / 200]0.41000000000000014Mean-square error = 1.9056003659526184
+0.41000000000000014r2 = -0.07836822714788316
+[Stage 2328:============================================>       (172 + 8) / 200]0.41000000000000014MAD--Mean Absolute Difference = 1.1099186237236862
+0.44000000000000017Root-mean-square error = 1.3829403827022182
+[Stage 2521:===============================================>    (184 + 8) / 200]0.44000000000000017Mean-square error = 1.9125241021085575
+0.44000000000000017r2 = -0.08228632939907876
+[Stage 2619:==========================================>         (163 + 8) / 200]0.44000000000000017MAD--Mean Absolute Difference = 1.1153556943125273
+[Stage 2763:=========================================>          (161 + 8) / 200]0.4700000000000002Root-mean-square error = 1.386560206674979
+[Stage 2812:==============================================>     (179 + 8) / 200]0.4700000000000002Mean-square error = 1.9225492067345604
+0.4700000000000002r2 = -0.08795947813250082
+0.4700000000000002MAD--Mean Absolute Difference = 1.121807196281163
+
+.setMaxIter(20)
+.setRegParam(0.33)
+.setRank(150)
+Root-mean-square error = 1.4033637506500036
+Mean-square error = 1.9694298166384456
+r2 = -0.11705791732956894
+MAD--Mean Absolute Difference = 1.1230355991604215
+
+.setMaxIter(20)
+        .setRegParam(0.33)
+        .setUserCol("user_id")
+        .setItemCol("business_id")
+        .setRatingCol("stars")
+        .setNonnegative(true)
+        .setNumBlocks(15)
+0.9;0.1
+Root-mean-square error = 1.3634375479025478
+[Stage 193:================================================>    (182 + 8) / 200]Mean-square error = 1.8589619470305123
+[Stage 242:===========================================>         (165 + 8) / 200]r2 = -0.051795766737651405
+[Stage 291:=========================================>           (158 + 8) / 200]MAD--Mean Absolute Difference = 1.0873779653348912
+0.7;0.1
+Root-mean-square error = 1.392873558996425
+Mean-square error = 1.9400967513513676
+r2 = -0.104626333507019
+[Stage 291:==============================================>      (174 + 8) / 200]MAD--Mean Absolute Difference = 1.1105698206760657
+0.8;0.2
+[Stage 144:==========================================>          (161 + 8) / 200]Root-mean-square error = 1.376501917424752
+[Stage 193:=================================================>   (185 + 8) / 200]Mean-square error = 1.8947575286740188
+r2 = -0.07236130213045389
+[Stage 291:===================================================> (194 + 6) / 200]MAD--Mean Absolute Difference = 1.0978081419042032
+
+
+//-------------Baseline predictor prediction-------------
+traingdata:316665 useravg:95503 addUserAvg:435845 prediction:435845 testData:435845
+Root-mean-square error = 1.2847321055548842
+Mean-absolute-error = 1.0638680703145398
+---------------------------------------------------------
+
+"select * from pretraindata where votes > 8"
+traingdata:92339 useravg:21331 addUserAvg:436530 prediction:436530 testData:436530
+prediction count: 436530result count: 436530
+Root-mean-square error = 1.3093451770028721
+Mean-absolute error = 1.0788144681364402
+
+"select * from pretraindata where votes > 5"
+traingdata:178417 useravg:48756 addUserAvg:437001 prediction:437001 testData:437001
+prediction count: 437001result count: 437001
+Root-mean-square error = 1.305351371144551
+Mean-absolute error = 1.0777387165631307
+
+"select * from pretraindata where votes > 3"
+traingdata:316004 useravg:95453 addUserAvg:436749 prediction:436749 testData:436749
+prediction count: 436749result count: 436749
+Root-mean-square error = 1.2937093994247202
+Mean-absolute error = 1.06825607621962
+
+"select * from pretraindata where votes > 3"
+traingdata:673197 useravg:213316 addUserAvg:437014 prediction:437014 testData:437014
+prediction count: 437014result count: 437014
+Root-mean-square error = 1.2734437785339443
+Mean-absolute error = 1.044083762565647
+
+"select * from pretraindata where votes > 0"
+traingdata:1043238 useravg:327801 addUserAvg:436004 prediction:436004 testData:436004
+prediction count: 436004result count: 436004
+Root-mean-square error = 1.259085375035168
+Mean-absolute error = 1.0285781579888984
+
+
+"select * from pretraindata where votes >= 0"
+Rank = 10{
+"select * from pretraindata where votes >= 0"
+traingdata:2080964 useravg:608208 addUserAvg:436676 prediction:436676 testData:436676
+prediction count: 436676result count: 436676
+Root-mean-square error = 1.2373448132871765
+Mean-absolute error = 0.9914459641173526
+
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 5")
+Root-mean-square error = 1.2371280291382407
+Mean-absolute error = 0.9979073195431986
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 3")
+Root-mean-square error = 1.239068894139133
+Mean-absolute error = 0.9971912023738516
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 8")
+Root-mean-square error = 1.2312995941403158
+Mean-absolute error = 0.994640051956813
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 10")
+Root-mean-square error = 1.229422763665003
+Mean-absolute error = 0.9945459078602703
+}
+
+.setMaxIter(20)
+.setRegParam(0.3)
+.setRank(150)
+"select * from pretraindata where votes >= 0"{
+alstrainingData = ss.sql("select * from pretraindata where votes >= 10"
+Root-mean-square error = 1.2247379140727286
+Mean-absolute error = 0.9906862050649117
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 8"
+Root-mean-square error = 1.22516044535022
+Mean-absolute error = 0.9903218625977926
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 5"
+Root-mean-square error = 1.2267126845480005
+Mean-absolute error = 0.9914019356400019
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 3"
+Root-mean-square error = 1.2257291461142144
+Mean-absolute error = 0.9898939260897285
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 1")
+Root-mean-square error = 1.224256872937418
+Mean-absolute error = 0.988527215117131
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 0")
+Root-mean-square error = 1.2208180020934543
+Mean-absolute error = 0.9850772937195382
+}
+
+.setMaxIter(20)
+.setRegParam(0.3)
+.setRank(150)
+"select * from pretraindata where votes >= 1"{
+traingdata:1033793 useravg:326166 addUserAvg:435985 prediction:435985 testData:435985
+alstrainingData = ss.sql("select * from pretraindata where votes >= 3")
+Root-mean-square error = 1.2455452722551819
+Mean-absolute error = 1.0229857155267057
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 5")
+Root-mean-square error = 1.245449476492931
+Mean-absolute error = 1.0234715106206507
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 0")
+Root-mean-square error = 1.238816380088145
+Mean-absolute error = 1.0150400173310354
+}
+
+.setRank(100)
+trainingData = ss.sql("select * from pretraindata where votes >= 0")
+{
+alstrainingData = ss.sql("select * from pretraindata where votes >= 0")
+Root-mean-square error = 1.2213623430611777
+Mean-absolute error = 0.984118285798444
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 1")
+Root-mean-square error = 1.2224453762345786
+Mean-absolute error = 0.9858429054101755
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 5")
+Root-mean-square error = 1.2254037431137794
+Mean-absolute error = 0.9900503575513452
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 10")
+Root-mean-square error = 1.2266846076088957
+Mean-absolute error = 0.9910504406428347
+}
+
+.setRank(50)
+trainingData = ss.sql("select * from pretraindata where votes >= 0")
+{
+alstrainingData = ss.sql("select * from pretraindata where votes >= 0")
+Root-mean-square error = 1.2241774343671314
+Mean-absolute error = 0.9858978154427667
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 3")
+Root-mean-square error = 1.2265243038232707
+Mean-absolute error = 0.9901295956221794
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 5")
+Root-mean-square error = 1.2277530293405587
+Mean-absolute error = 0.9917439943171622
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 8")
+Root-mean-square error = 1.2275442610510396
+Mean-absolute error = 0.9922663395784811
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 10")
+Root-mean-square error = 1.2247542091515378
+Mean-absolute error = 0.9899691106967919
+
+}
+
+
+.setRank(300)
+trainingData = ss.sql("select * from pretraindata where votes >= 0")
+{
+alstrainingData = ss.sql("select * from pretraindata where votes >= 0")
+Root-mean-square error = 1.2206004057011552
+Mean-absolute error = 0.9842665603829499
+
+alstrainingData = ss.sql("select * from pretraindata where votes >= 3")
+Root-mean-square error = 1.2251099035409203
+Mean-absolute error = 0.9896907783866029
+}

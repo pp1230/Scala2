@@ -36,11 +36,12 @@ object ScApiTest{
     val rdd5 = rdd3.join[Int](rdd4)
 
     rdd3.foreach(i => println(i))
+    println("---------rdd5---------")
     rdd5.foreach(i => println(i))
 
-    val vector = Vectors.sparse(20, Array(11, 12, 3, 4), Array(7, 8, 9, 6))
-    println("------------>"+vector.toArray(4)+"/"+vector)
-    println(vector.foreachActive((a,b) => println(a+"/"+b)))
+    //val vector = Vectors.sparse(20, Array(11, 12, 3, 4), Array(7, 8, 9, 6))
+    //println("------------>"+vector.toArray(4)+"/"+vector)
+    //println(vector.foreachActive((a,b) => println(a+"/"+b)))
 
     /**
       * 运行结果1
