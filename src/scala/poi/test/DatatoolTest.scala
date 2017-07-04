@@ -45,6 +45,18 @@ object DataAnalysisYelpTest{
 }
 
 /**
+  * 输出yelp数据集的用户商家和评分
+  */
+object DataAnalysisYelpOutput{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val result = analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+      "user_id","business_id","stars","json",1)
+    result.show()
+    analysis.outputResult(result, 1, "outputdata/YelpUserItemRatingAll")
+  }
+}
+/**
   * 按照用户的checkin数目过滤
   */
 object DataAnalysisTest1{
@@ -79,6 +91,45 @@ object DataFilterYelpOutput{
 }
 
 /**
+  * 按照用户和商家checkin数目过滤后分析输出
+  */
+object DataFilterYelpUserItemOutput{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val filter = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+        "user_id","business_id","stars","json",1),"_1","_2",">",10).toDF("userid","itemid","count")
+    val data = analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+      "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
+    val output = data.join(filter,Seq("userid","itemid")).toDF("_1","_2","_3","_4")
+    val result = analysis.analyseSparsity(output)
+    println("DataFilterYelpUserItemOutput"+result)
+    analysis.outputResult(output, 1, "outputdata/YelpUserItemCheckinMorethan10")
+  }
+}
+
+/**
+  * 按照用户和商家checkin数目过滤后分析输出
+  */
+object DataFilterYelpUserandItemOutput{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val filter1 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+        "user_id","business_id","stars","json",1),"_1",">",10).toDF("userid","count")
+    val filter2 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+        "user_id","business_id","stars","json",1),"_1",">",10).toDF("itemid","count")
+    val data = analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+      "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
+    val output = data.join(filter1,"userid").join(filter2,"itemid")toDF("_1","_2","_3","_4")
+    val result = analysis.analyseSparsity(output)
+    println("DataFilterYelpUserandItemOutput"+result)
+    analysis.outputResult(output, 1, "outputdata/YelpUserandItemCheckinMorethan10")
+  }
+}
+
+/**
   * 按照用户的checkin数目过滤
   */
 object DataAnalysisGowallaFilter{
@@ -92,6 +143,22 @@ object DataAnalysisGowallaFilter{
     val output = data.join(filter,"userid").toDF("_1","_2","_3","_4")
     val result = analysis.analyseSparsity(output)
     println("GowallaFilterTest"+result)
+  }
+}
+/**
+  * 按照地点的checkin数目过滤
+  */
+object DataAnalysisGowallaItemFilter{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val filter = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("Gowalla/Gowalla_totalCheckins.txt",
+        "_c0","_c4","_c2","csv",1),"_2",">",10).toDF("itemid","count")
+    val data = analysis.userItemRateAnalysis("Gowalla/Gowalla_totalCheckins.txt",
+      "_c0","_c4","_c2","csv",1).toDF("userid","itemid","starts")
+    val output = data.join(filter,"itemid").toDF("_1","_2","_3","_4")
+    val result = analysis.analyseSparsity(output)
+    println("DataAnalysisGowallaItemFilter"+result)
   }
 }
 /**
@@ -110,10 +177,25 @@ object DataFilterGowallaOutput{
   }
 }
 
+/**
+  * 按照地点checkin数目过滤后输出
+  */
+object DataFilterGowallaItemOutput{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val filter = analysis.userItemRateFilterAnalysis(
+      analysis.userItemlalonAnalysis("Gowalla/Gowalla_totalCheckins.txt",
+        "_c0","_c4","_c2","_c3","csv",1),"_2",">",10).toDF("itemid","count")
+    val data = analysis.userItemlalonAnalysis("Gowalla/Gowalla_totalCheckins.txt",
+      "_c0","_c4","_c2","_c3","csv",1).toDF("userid","itemid","la","lon")
+    val output = data.join(filter,"itemid").toDF("_1","_2","_3","_4","_5")
+    analysis.outputResult(output,1,"outputdata/GowallaItemCheckinMoreThan10")
+  }
+}
+
 object Testall {
   def main(args: Array[String]) {
-
-    DataFilterYelpOutput.main(args)
-    DataFilterGowallaOutput.main(args)
+    DataFilterYelpUserandItemOutput.main(args)
+    DataAnalysisYelpOutput.main(args)
   }
 }

@@ -61,7 +61,7 @@ class DataAnalysis(read:String) {
   }
 
   /**
-    * 计数并条件过滤
+    * 计数并条件过滤（选择一列满足条件）
     * @param input 输入数据表
     * @param ob 过滤的列名
     * @param filter 过滤条件
@@ -79,6 +79,32 @@ class DataAnalysis(read:String) {
     }
     else if(filter.equals("=")){
       val data = getdata.getUserCheckinEqualWith(input,ob,num)
+      return data
+    }
+    else return null
+
+  }
+
+  /**
+    * 计数并条件过滤（两列同时满足）
+    * @param input
+    * @param ob1
+    * @param ob2
+    * @param filter
+    * @param num
+    * @return
+    */
+  def userItemRateFilterAnalysis(input:DataFrame, ob1:String, ob2:String, filter:String, num:Int):DataFrame={
+    if(filter.equals(">")){
+      val data = getdata.getUserItemCheckinMoreThan(input,ob1,ob2,num)
+      return data
+    }
+    else if(filter.equals("<")){
+      val data = getdata.getUserItemCheckinLessThan(input,ob1,ob2,num)
+      return data
+    }
+    else if(filter.equals("=")){
+      val data = getdata.getUserItemCheckinEqualWith(input,ob1,ob2,num)
       return data
     }
     else return null

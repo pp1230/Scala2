@@ -102,6 +102,18 @@ class GetRandomData(base:String) {
   }
 
   /**
+    * 根据两列计数
+    * @param input
+    * @param ob1
+    * @param ob2
+    * @return
+    */
+  def getGroupbyCount(input:DataFrame,ob1:String,ob2:String):DataFrame = {
+    val data = input.groupBy(ob1,ob2).count().toDF("_1","_2","_3")
+    return data
+  }
+
+  /**
     * 获得用户对商户的评分数据，不求平均分
     *
     * @param input 原始数据集表
@@ -148,7 +160,7 @@ class GetRandomData(base:String) {
   }
 
   /**
-    * 对计数列进行过滤
+    * 对一列进行group然后计数列进行过滤
     * @param input
     * @param ob
     * @param num
@@ -176,5 +188,34 @@ class GetRandomData(base:String) {
     return data
   }
 
+  /**
+    * 对两列进行group然后对计数列进行过滤
+    * @param input
+    * @param ob1
+    * @param ob2
+    * @param num
+    * @return
+    */
+  def getUserItemCheckinMoreThan(input:DataFrame, ob1:String, ob2:String, num:Int): DataFrame = {
+    val select = getGroupbyCount(input,ob1,ob2)
+    //select.show()
+    select.createOrReplaceTempView("table")
+    val data = ss.sql("select * from table where _3 > "+num)
+    return data
+  }
+
+  def getUserItemCheckinLessThan(input:DataFrame, ob1:String, ob2:String, num:Int): DataFrame = {
+    val select = getGroupbyCount(input,ob1,ob2)
+    select.createOrReplaceTempView("table")
+    val data = ss.sql("select * from table where _3 < "+num)
+    return data
+  }
+
+  def getUserItemCheckinEqualWith(input:DataFrame, ob1:String, ob2:String, num:Int): DataFrame = {
+    val select = getGroupbyCount(input,ob1,ob2)
+    select.createOrReplaceTempView("table")
+    val data = ss.sql("select * from table where _3 = "+num)
+    return data
+  }
 
 }
