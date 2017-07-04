@@ -45,7 +45,12 @@ class GetRandomData(base:String) {
     var yelpRating = getRawPercentData(readpath,per)
     val data = getUserItemAvgrating(yelpRating,user,item,rate)
     data.show()
-    data.repartition(1).write.mode("overwrite").csv(base+writepath)
+    //data.repartition(1).write.mode("overwrite").csv(base+writepath)
+    writeData(data, 1, writepath)
+  }
+
+  def writeData(input:DataFrame, par:Int, writepath:String): Unit ={
+    input.repartition(par).write.mode("overwrite").csv(base+writepath)
   }
 
   /**
@@ -65,7 +70,8 @@ class GetRandomData(base:String) {
   def getCsvRawPercentData(readpath:String, sep:String, per:Double):DataFrame = {
     val data = ss.read.format("csv").option("sep",sep)
       .csv(basedir+readpath)
-    return data
+    val Array(training,testing) = data.randomSplit(Array(per,1-per))
+    return training
   }
 
   /**
@@ -119,6 +125,25 @@ class GetRandomData(base:String) {
     val data = indexed2.select("userid","itemid",rate)
       .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,r(2).toString.toDouble))
       .toDF("_1","_2","_3")
+    return data
+  }
+
+  def getUserItemlalon(input:DataFrame, user:String, item:String, la:String, lon:String):DataFrame = {
+    val select = input.select(user,item,la,lon)
+    val indexer1 = new StringIndexer()
+      .setInputCol(user)
+      .setOutputCol("userid")
+    val indexed1 = indexer1.fit(select).transform(select).sort("userid")
+    //indexed1.show(10000)
+    val indexer2 = new StringIndexer()
+      .setInputCol(item)
+      .setOutputCol("itemid")
+    val indexed2 = indexer2.fit(indexed1).transform(indexed1).sort("userid","itemid")
+    //indexed2.show(10000)
+    val data = indexed2.select("userid","itemid",la,lon)
+      .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,
+        r(2).toString.toDouble, r(3).toString.toDouble))
+      .toDF("_1","_2","_3","_4")
     return data
   }
 

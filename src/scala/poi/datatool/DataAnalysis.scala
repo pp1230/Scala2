@@ -10,7 +10,7 @@ class DataAnalysis(read:String) {
   var getdata = new GetRandomData(read)
 
   /**
-    * 从给定路径的数据集中获取用户商户评分
+    * 从给定路径的数据集中获取用户商户id和评分
     * @param datapath 数据集路径
     * @param user 用户列名
     * @param item 商户列名
@@ -23,6 +23,25 @@ class DataAnalysis(read:String) {
     if(format.equals("csv"))
       format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
     val data = getdata.getUserItemRating(format1,user,item,rate)
+    return data
+  }
+
+  /**
+    * 从给定数据集中获取用户和商户的id和经纬度
+    * @param datapath
+    * @param user
+    * @param item
+    * @param la
+    * @param lon
+    * @param format 默认json，若使用csv则使用\t作为隔断
+    * @param per
+    * @return
+    */
+  def userItemlalonAnalysis(datapath:String,user:String,item:String,la:String, lon:String, format:String,per:Double): DataFrame ={
+    var format1 = getdata.getRawPercentData(datapath,per)
+    if(format.equals("csv"))
+      format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    val data = getdata.getUserItemlalon(format1,user,item,la,lon)
     return data
   }
 
@@ -76,9 +95,18 @@ class DataAnalysis(read:String) {
     val itemnum = input.groupBy("_2").count().count()
     val totalnum = input.count()
     val result = totalnum.toDouble/(usernum * itemnum)
-    return "Sparsity is : "+ result+"%, "+"User "+usernum + " item "+itemnum +" total "+totalnum
+    return "Sparsity is : "+ result*100+"%, "+"User "+usernum + " item "+itemnum +" total "+totalnum
   }
 
+  /**
+    * 输出结果（DataFrame）到指定目录
+    * @param input
+    * @param partition
+    * @param writepath
+    */
+  def outputResult(input:DataFrame, partition:Int, writepath:String): Unit ={
+    getdata.writeData(input,partition,writepath)
+  }
 
 
 }
