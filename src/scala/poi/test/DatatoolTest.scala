@@ -103,20 +103,20 @@ object DataFilterYelpOutput{
 /**
   * 按照用户和商家checkin数目过滤后分析输出
   */
-object DataFilterYelpUserItemOutput{
-  def main(args: Array[String]) {
-    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
-    val filter = analysis.userItemRateFilterAnalysis(
-      analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
-        "user_id","business_id","stars","json",1),"_1","_2",">",10).toDF("userid","itemid","count")
-    val data = analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
-      "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
-    val output = data.join(filter,Seq("userid","itemid")).toDF("_1","_2","_3","_4")
-    val result = analysis.analyseSparsity(output)
-    println("DataFilterYelpUserItemOutput"+result)
-    analysis.outputResult(output, 1, "outputdata/YelpUserItemCheckinMorethan10")
-  }
-}
+//object DataFilterYelpUserItemOutput{
+//  def main(args: Array[String]) {
+//    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+//    val filter = analysis.userItemRateFilterAnalysis(
+//      analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+//        "user_id","business_id","stars","json",1),"_1","_2",">",10).toDF("userid","itemid","count")
+//    val data = analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
+//      "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
+//    val output = data.join(filter,Seq("userid","itemid")).toDF("_1","_2","_3","_4")
+//    val result = analysis.analyseSparsity(output)
+//    println("DataFilterYelpUserItemOutput"+result)
+//    analysis.outputResult(output, 1, "outputdata/YelpUserItemCheckinMorethan10")
+//  }
+//}
 
 /**
   * 按照用户和商家checkin数目过滤后分析输出
@@ -221,6 +221,87 @@ object DataFilterGowallaItemOutput{
     analysis.outputResult(output,1,"outputdata/GowallaItemCheckinMoreThan10")
   }
 }
+
+/**----------------------------------------------------------------------------------
+  * 使用测试数据
+  */
+object YelpUserItemRatingTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val result = analysis.userItemRateAnalysis("input/useritemrating.json",
+      "user_id","business_id","stars","json",1)
+    result.show()
+    analysis.outputResult(result, 1, "output/YelpUserItemRatingAll")
+  }
+}
+
+object YelpUserFriendTrustTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val result = analysis.userandFriendTrustAnalysis("input/userfriends.json",
+      "user_id","friends", 1)
+    result.show()
+    analysis.outputResult(result, 1, "output/DataAnalysisYelpUserItemTrust")
+  }
+
+}
+
+object YelpOneFilterTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val filter = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("input/useritemrating.json",
+        "user_id","business_id","stars","json",1),"_2",">",3).toDF("itemid","count")
+    filter.show()
+    val data = analysis.userItemRateAnalysis("input/useritemrating.json",
+      "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
+    data.show()
+    val output = data.join(filter,"itemid").toDF("_1","_2","_3","_4")
+    output.show()
+    analysis.outputResult(output, 1, "output/YelpUserCheckinMorethan10")
+  }
+}
+
+object YelpTwoFilterTest1{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val filter1 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("input/useritemrating.json",
+        "user_id","business_id","stars","json",1),"_1",">",3).toDF("userid","count")
+    filter1.show()
+    val filter2 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("input/useritemrating.json",
+        "user_id","business_id","stars","json",1),"_2",">",1).toDF("itemid","count")
+    filter2.show()
+    val data = analysis.userItemRateAnalysis("input/useritemrating.json",
+      "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
+    val output = data.join(filter1,"userid").join(filter2,"itemid")toDF("_1","_2","_3","_4","_5")
+    output.show()
+    val result = analysis.analyseSparsity(output)
+    println("DataFilterYelpUserandItemOutput"+result)
+    analysis.outputResult(output, 1, "output/YelpUserandItemCheckinMorethan10")
+  }
+}
+
+object YelpTwoFilterTest2{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val filter1 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("input/useritemrating.json",
+        "user_id","business_id","stars","json",1),"_1",">",3).toDF("userid","count")
+    val filter2 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysis("input/useritemrating.json",
+        "user_id","business_id","stars","json",1),"_2",">",1).toDF("itemid","count")
+    val data = analysis.userItemRateAnalysis("input/useritemrating.json",
+      "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
+    val output1 = data.join(filter1,"userid")
+    val output2 = filter2.join(output1,"itemid").toDF("_1","_2","_3","_4","_5")
+    val result = analysis.analyseSparsity(output2)
+    println("DataFilterYelpUserandItemOutput"+result)
+    analysis.outputResult(output2, 1, "output/2YelpUserandItemCheckinMorethan10")
+  }
+}
+//-------------------------------------------------------------------------------------------
 
 object Testall {
   def main(args: Array[String]) {

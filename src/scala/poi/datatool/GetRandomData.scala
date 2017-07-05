@@ -3,6 +3,7 @@ package scala.poi.datatool
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions.{explode,lit}
+import org.apache.log4j.{Level, Logger}
 /**
   * Created by pi on 17-7-1.
   */
@@ -12,6 +13,7 @@ class GetRandomData(base:String) {
   val ss = SparkSession.builder().appName("Yelp Rating")
     .master("local[*]").getOrCreate()
   import ss.implicits._
+  Logger.getLogger("org").setLevel(Level.WARN)
 
   /**
     * 获得百分比yelp用户对商户评分数据，求平均
@@ -76,8 +78,11 @@ class GetRandomData(base:String) {
 
   def getYelpUserFriendsTrustData(input:DataFrame, user:String, friends:String): DataFrame ={
     val data = input.select(user, friends)
+    data.show()
     val explodedata = data.withColumn(friends, explode($"friends"))
+    explodedata.show()
     val trust = explodedata.withColumn("trust", lit(1))
+    trust.show()
     val result = getUserItemRating(trust,"user_id","friends","trust")
     return result
   }
@@ -176,7 +181,7 @@ class GetRandomData(base:String) {
     */
   def getUserCheckinMoreThan(input:DataFrame, ob:String, num:Int): DataFrame = {
     val select = getGroupbyCount(input,ob)
-    //select.show()
+    select.show()
     select.createOrReplaceTempView("table")
     val data = ss.sql("select * from table where _2 > "+num)
     return data
