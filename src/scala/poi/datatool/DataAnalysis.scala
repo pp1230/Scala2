@@ -26,6 +26,23 @@ class DataAnalysis(read:String) {
     return data
   }
 
+  def userItemRateAnalysisNotrans(datapath:String, user:String,item:String,rate:String,format:String,per:Double): DataFrame ={
+    var format1 = getdata.getRawPercentData(datapath,per)
+    if(format.equals("csv"))
+      format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    val data = getdata.selectData(format1,user,item,rate)
+    return data
+  }
+
+  def transformId(input:DataFrame, col1:String, col2:String, col3:String): DataFrame ={
+    return getdata.transformUseridandItemidOne(input,col1,col2,col3)
+  }
+
+  def transformIdUsingIndexer(trainingdata:DataFrame, trainingcol:String, input:DataFrame):DataFrame={
+    val indexer = getdata.getIndexer(trainingdata, trainingcol)
+    val result = getdata.getIndexingData(input,indexer)
+    return result
+  }
   def userandFriendTrustAnalysis(datapath:String, user:String, friends:String, per:Double):DataFrame ={
     var raw = getdata.getRawPercentData(datapath,per)
     val data = getdata.getYelpUserFriendsTrustData(raw,user,friends)
@@ -64,6 +81,10 @@ class DataAnalysis(read:String) {
     val data = getdata.getUserItemAvgrating(getdata.getRawPercentData(datapath,per)
       ,user,item,rate)
     return data
+  }
+
+  def getAvg(input:DataFrame, user:String, item:String, rate:String):DataFrame={
+    return getdata.getUserItemAvg(input,user,item,rate)
   }
 
   /**
@@ -125,7 +146,7 @@ class DataAnalysis(read:String) {
   def analyseSparsity(input:DataFrame): String ={
     val usernum = input.groupBy("_1").count().count()
     val itemnum = input.groupBy("_2").count().count()
-    val totalnum = input.count()
+    val totalnum = input.groupBy("_1","_2").count().count()
     val result = totalnum.toDouble/(usernum * itemnum)
     return "Sparsity is : "+ result*100+"%, "+"User "+usernum + " item "+itemnum +" total "+totalnum
   }

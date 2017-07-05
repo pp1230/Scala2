@@ -1,6 +1,7 @@
 package scala.poi.datatool
 
-import org.apache.spark.ml.feature.StringIndexer
+import org.apache.spark.ml.feature.{StringIndexerModel, StringIndexer}
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions.{explode,lit}
 import org.apache.log4j.{Level, Logger}
@@ -78,13 +79,13 @@ class GetRandomData(base:String) {
 
   def getYelpUserFriendsTrustData(input:DataFrame, user:String, friends:String): DataFrame ={
     val data = input.select(user, friends)
-    data.show()
+    //data.show()
     val explodedata = data.withColumn(friends, explode($"friends"))
-    explodedata.show()
-    val trust = explodedata.withColumn("trust", lit(1))
-    trust.show()
-    val result = getUserItemRating(trust,"user_id","friends","trust")
-    return result
+    //explodedata.show()
+    val trust = explodedata.withColumn("trust", lit(1)).toDF("_1","_2","_3")
+    //trust.show()
+    //val result = getUserItemRating(trust,"user_id","friends","trust")
+    return trust
   }
 
   /**
@@ -103,8 +104,13 @@ class GetRandomData(base:String) {
     return data
   }
 
+  def getUserItemAvg(input:DataFrame,user:String, item:String, rate:String):DataFrame = {
+    val data = input.groupBy(user, item).avg(rate).toDF("_1","_2","_3")
+    return data
+  }
   /**
     * 根据某列计数
+    *
     * @param input
     * @param ob
     * @return
@@ -116,6 +122,7 @@ class GetRandomData(base:String) {
 
   /**
     * 根据两列计数
+    *
     * @param input
     * @param ob1
     * @param ob2
@@ -126,6 +133,13 @@ class GetRandomData(base:String) {
     return data
   }
 
+  def selectData(input:DataFrame, col1:String, col2:String, col3:String):DataFrame= {
+    return input.select(col1,col2,col3).toDF("_1","_2","_3")
+  }
+
+  def selectData(input:DataFrame, col1:String, col2:String, col3:String, col4:String):DataFrame= {
+    return input.select(col1,col2,col3,col4).toDF("_1","_2","_3","_4")
+  }
   /**
     * 获得用户对商户的评分数据，不求平均分
     *
@@ -137,34 +151,56 @@ class GetRandomData(base:String) {
     */
   def getUserItemRating(input:DataFrame, user:String, item:String, rate:String):DataFrame = {
     val select = input.select(user,item,rate)
-    val indexer1 = new StringIndexer()
-      .setInputCol(user)
-      .setOutputCol("userid")
-    val indexed1 = indexer1.fit(select).transform(select).sort("userid")
-    //indexed1.show(10000)
-    val indexer2 = new StringIndexer()
-      .setInputCol(item)
-      .setOutputCol("itemid")
-    val indexed2 = indexer2.fit(indexed1).transform(indexed1).sort("userid","itemid")
-    //indexed2.show(10000)
-    val data = indexed2.select("userid","itemid",rate)
-      .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,r(2).toString.toDouble))
-      .toDF("_1","_2","_3")
+    val data = transformUseridandItemidOne(select, user, item, rate)
     return data
   }
 
   def getUserItemlalon(input:DataFrame, user:String, item:String, la:String, lon:String):DataFrame = {
     val select = input.select(user,item,la,lon)
-    val indexer1 = new StringIndexer()
-      .setInputCol(user)
-      .setOutputCol("userid")
-    val indexed1 = indexer1.fit(select).transform(select).sort("userid")
-    //indexed1.show(10000)
-    val indexer2 = new StringIndexer()
-      .setInputCol(item)
-      .setOutputCol("itemid")
-    val indexed2 = indexer2.fit(indexed1).transform(indexed1).sort("userid","itemid")
-    //indexed2.show(10000)
+    val data = transformUseridandItemidTwo(select,user,item, la, lon)
+    return data
+  }
+
+  /**
+    * transform userid and itemid into integer
+    *
+    * @param input input dataframe
+    * @param user userid
+    * @param item itemid
+    * @return dataframe using integer id
+    */
+  def transformUseridandItemidOne(input:DataFrame, user:String, item:String, rate:String):DataFrame={
+    val indexed1 = getIndexer(input,user).transform(input).sort(user+"(indexed)")
+    val indexed2 = getIndexer(indexed1,item).transform(indexed1).sort(user+"(indexed)",item+"(indexed)")
+    val data = indexed2.select(user+"(indexed)",item+"(indexed)",rate)
+      .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,r(2).toString.toDouble))
+      .toDF("_1","_2","_3")
+    return data
+  }
+
+  def getIndexingData(input:DataFrame, indexer:StringIndexerModel):DataFrame={
+      val result1 = indexer.transform(input).withColumnRenamed("_1(indexed)","_11(indexed)")
+    val input2 = result1.withColumnRenamed("_1","_11").withColumnRenamed("_2","_1")
+          .withColumnRenamed("_11","_2")
+    val result2 = indexer.transform(input2).withColumnRenamed("_1(indexed)","_2(indexed)")
+      .withColumnRenamed("_11(indexed)","_1(indexed)").select("_1(indexed)","_2(indexed)","_3")
+          .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,r(2).toString.toInt))
+          .toDF("_1","_2","_3")
+    //result2.show()
+    return result2
+  }
+
+  def getIndexer(input:DataFrame,col: String): StringIndexerModel={
+    val indexer = new StringIndexer()
+      .setInputCol(col)
+        .setOutputCol(col+"(indexed)")
+    val result = indexer.fit(input)
+    return result
+  }
+
+  def transformUseridandItemidTwo(input:DataFrame, user:String, item:String, la:String, lon:String):DataFrame={
+    val indexed1 = getIndexer(input,user).transform(input).sort(user+"(indexed)")
+    val indexed2 = getIndexer(indexed1,item).transform(indexed1).sort(user+"(indexed)",item+"(indexed)")
     val data = indexed2.select("userid","itemid",la,lon)
       .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,
         r(2).toString.toDouble, r(3).toString.toDouble))
@@ -174,6 +210,7 @@ class GetRandomData(base:String) {
 
   /**
     * 对一列进行group然后计数列进行过滤
+    *
     * @param input
     * @param ob
     * @param num
@@ -181,7 +218,6 @@ class GetRandomData(base:String) {
     */
   def getUserCheckinMoreThan(input:DataFrame, ob:String, num:Int): DataFrame = {
     val select = getGroupbyCount(input,ob)
-    select.show()
     select.createOrReplaceTempView("table")
     val data = ss.sql("select * from table where _2 > "+num)
     return data
@@ -203,6 +239,7 @@ class GetRandomData(base:String) {
 
   /**
     * 对两列进行group然后对计数列进行过滤
+    *
     * @param input
     * @param ob1
     * @param ob2
