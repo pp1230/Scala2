@@ -2,7 +2,7 @@ package scala.poi.datatool
 
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
+import org.apache.spark.sql.functions.{explode,lit}
 /**
   * Created by pi on 17-7-1.
   */
@@ -72,6 +72,14 @@ class GetRandomData(base:String) {
       .csv(basedir+readpath)
     val Array(training,testing) = data.randomSplit(Array(per,1-per))
     return training
+  }
+
+  def getYelpUserFriendsTrustData(input:DataFrame, user:String, friends:String): DataFrame ={
+    val data = input.select(user, friends)
+    val explodedata = data.withColumn(friends, explode($"friends"))
+    val trust = explodedata.withColumn("trust", lit(1))
+    val result = getUserItemRating(trust,"user_id","friends","trust")
+    return result
   }
 
   /**

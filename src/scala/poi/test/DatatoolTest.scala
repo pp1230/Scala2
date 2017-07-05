@@ -56,6 +56,16 @@ object DataAnalysisYelpOutput{
     analysis.outputResult(result, 1, "outputdata/YelpUserItemRatingAll")
   }
 }
+
+object DataAnalysisYelpTrustOutput{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val result = analysis.userandFriendTrustAnalysis("textdata/yelp_academic_dataset_user.json",
+      "user_id","friends", 1)
+    result.show()
+    analysis.outputResult(result, 1, "outputdata/DataAnalysisYelpUserItemTrust")
+  }
+}
 /**
   * 按照用户的checkin数目过滤
   */
@@ -122,7 +132,7 @@ object DataFilterYelpUserandItemOutput{
         "user_id","business_id","stars","json",1),"_1",">",10).toDF("itemid","count")
     val data = analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
       "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
-    val output = data.join(filter1,"userid").join(filter2,"itemid")toDF("_1","_2","_3","_4")
+    val output = data.join(filter1,"userid").join(filter2,"itemid")toDF("_1","_2","_3","_4","_5")
     val result = analysis.analyseSparsity(output)
     println("DataFilterYelpUserandItemOutput"+result)
     analysis.outputResult(output, 1, "outputdata/YelpUserandItemCheckinMorethan10")
@@ -177,6 +187,25 @@ object DataFilterGowallaOutput{
   }
 }
 
+
+object DataFilterGowallaUserandItemOutput{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val filter1 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemlalonAnalysis("Gowalla/Gowalla_totalCheckins.txt",
+        "_c0","_c4","_c2","_c3","csv",1),"_1",">",10).toDF("userid","count")
+    val filter2 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemlalonAnalysis("Gowalla/Gowalla_totalCheckins.txt",
+        "_c0","_c4","_c2","_c3","csv",1),"_2",">",10).toDF("itemid","count")
+    val data = analysis.userItemlalonAnalysis("Gowalla/Gowalla_totalCheckins.txt",
+      "_c0","_c4","_c2","_c3","csv",1).toDF("userid","itemid","la","lon")
+    val output1 = data.join(filter1,"userid")
+    val output2 = filter2.join(output1,"itemid").toDF("_1","_2","_3","_4","_5","_6")
+    val result = analysis.analyseSparsity(output2)
+    println("DataFilterGowallaUserandItemOutput"+result)
+    analysis.outputResult(output2, 1, "outputdata/DataFilterGowallaUserandItemMorethan10")
+  }
+}
 /**
   * 按照地点checkin数目过滤后输出
   */
@@ -195,7 +224,7 @@ object DataFilterGowallaItemOutput{
 
 object Testall {
   def main(args: Array[String]) {
-    DataFilterYelpUserandItemOutput.main(args)
-    DataAnalysisYelpOutput.main(args)
+    DataAnalysisYelpTrustOutput.main(args)
+    DataFilterGowallaUserandItemOutput.main(args)
   }
 }

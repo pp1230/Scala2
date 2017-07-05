@@ -26,6 +26,12 @@ class DataAnalysis(read:String) {
     return data
   }
 
+  def userandFriendTrustAnalysis(datapath:String, user:String, friends:String, per:Double):DataFrame ={
+    var raw = getdata.getRawPercentData(datapath,per)
+    val data = getdata.getYelpUserFriendsTrustData(raw,user,friends)
+    return data
+  }
+
   /**
     * 从给定数据集中获取用户和商户的id和经纬度
     * @param datapath
