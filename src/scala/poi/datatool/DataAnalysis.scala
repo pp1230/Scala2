@@ -15,7 +15,7 @@ class DataAnalysis(read:String) {
     * @param user 用户列名
     * @param item 商户列名
     * @param rate 评分列名
-    * @param per 分析数据百分比
+    * @param per 分析数据比例（随机抽取）
     * @return 数据表
     */
   def userItemRateAnalysis(datapath:String,user:String,item:String,rate:String,format:String,per:Double): DataFrame ={
@@ -26,6 +26,16 @@ class DataAnalysis(read:String) {
     return data
   }
 
+  /**
+    * 从给定路径的数据集中获取用户商户id和评分，不做id转换
+    * @param datapath 数据集路径
+    * @param user 用户列名
+    * @param item 商户列名
+    * @param rate 评分列名
+    * @param format 格式
+    * @param per 提取数据比例（随机抽取）
+    * @return 数据表
+    */
   def userItemRateAnalysisNotrans(datapath:String, user:String,item:String,rate:String,format:String,per:Double): DataFrame ={
     var format1 = getdata.getRawPercentData(datapath,per)
     if(format.equals("csv"))
@@ -34,15 +44,39 @@ class DataAnalysis(read:String) {
     return data
   }
 
+  /**
+    * 将id转换为Integer
+    * @param input
+    * @param col1
+    * @param col2
+    * @param col3
+    * @return
+    */
   def transformId(input:DataFrame, col1:String, col2:String, col3:String): DataFrame ={
     return getdata.transformUseridandItemidOne(input,col1,col2,col3)
   }
 
+  /**
+    * 使用特定数据集训练的Indexer转换给定的数据集，用于转换社交网络用户id
+    * @param trainingdata 训练Indexer的数据集
+    * @param trainingcol 训练的列名
+    * @param input 需要转换的数据集（转换前两列）
+    * @return
+    */
   def transformIdUsingIndexer(trainingdata:DataFrame, trainingcol:String, input:DataFrame):DataFrame={
     val indexer = getdata.getIndexer(trainingdata, trainingcol)
     val result = getdata.getIndexingData(input,indexer)
     return result
   }
+
+  /**
+    * 将用户的多个好友展开成一一对应的列
+    * @param datapath 包含好友关系的数据集
+    * @param user 用户列名
+    * @param friends 好友数组列名
+    * @param per 提取数据比例
+    * @return 好友关系表
+    */
   def userandFriendTrustAnalysis(datapath:String, user:String, friends:String, per:Double):DataFrame ={
     var raw = getdata.getRawPercentData(datapath,per)
     val data = getdata.getYelpUserFriendsTrustData(raw,user,friends)
@@ -69,7 +103,7 @@ class DataAnalysis(read:String) {
   }
 
   /**
-    * 求平均
+    * 求平均，转换id
     * @param datapath
     * @param user
     * @param item
@@ -83,6 +117,14 @@ class DataAnalysis(read:String) {
     return data
   }
 
+  /**
+    * 求平均，不转换id
+    * @param input
+    * @param user
+    * @param item
+    * @param rate
+    * @return
+    */
   def getAvg(input:DataFrame, user:String, item:String, rate:String):DataFrame={
     return getdata.getUserItemAvg(input,user,item,rate)
   }
@@ -146,6 +188,7 @@ class DataAnalysis(read:String) {
   def analyseSparsity(input:DataFrame): String ={
     val usernum = input.groupBy("_1").count().count()
     val itemnum = input.groupBy("_2").count().count()
+    //计算稀疏性时，需要将checkin中的重复列去除
     val totalnum = input.groupBy("_1","_2").count().count()
     val result = totalnum.toDouble/(usernum * itemnum)
     return "Sparsity is : "+ result*100+"%, "+"User "+usernum + " item "+itemnum +" total "+totalnum
