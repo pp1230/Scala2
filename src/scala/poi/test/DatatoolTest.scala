@@ -324,7 +324,7 @@ object YelpTwoFilterRatingandTrustOutputTest{
     filter1.show()
     val filter2 = analysis.userItemRateFilterAnalysis(
       analysis.userItemRateAnalysisNotrans("input/useritemrating.json",
-        "user_id","business_id","stars","json",1),"_2",">",3).toDF("itemid","count")
+        "user_id","business_id","stars","json",1),"_2",">",1).toDF("itemid","count")
     filter2.show()
     val data = analysis.userItemRateAnalysisNotrans("input/useritemrating.json",
       "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
@@ -339,8 +339,10 @@ object YelpTwoFilterRatingandTrustOutputTest{
     val dropre = analysis.getAvg(output1.select("_2","_1","_3").toDF("_1","_2","_3"),"_1","_2","_3")
     dropre.show()
     val indexrating = analysis.transformId(dropre,"_1","_2","_3")
-    val filteruser = friends.join(dropre.select("_1"),"_1")
-      .join(dropre.select("_1").toDF("_2"),"_2")
+    val users = dropre.select("_1").groupBy("_1").count()
+    users.show()
+    val filteruser = friends.join(users.select("_1"),"_1")
+      .join(users.select("_1").toDF("_2"),"_2")
     filteruser.show()
     val indextrust = analysis.transformIdUsingIndexer(output1.select("_2").toDF("_1"), "_1", filteruser)
     indexrating.show()
@@ -416,8 +418,10 @@ object YelpTwoFilterRatingandTrustOutput{
     val dropre = analysis.getAvg(output1.select("_2","_1","_3").toDF("_1","_2","_3"),"_1","_2","_3")
     dropre.show()
     val indexrating = analysis.transformId(dropre,"_1","_2","_3")
-    val filteruser = friends.join(dropre.select("_1"),"_1")
-      .join(dropre.select("_1").toDF("_2"),"_2")
+    val users = dropre.select("_1").groupBy("_1").count()
+    users.show()
+    val filteruser = friends.join(users.select("_1"),"_1")
+      .join(users.select("_1").toDF("_2"),"_2")
     val indextrust = analysis.transformIdUsingIndexer(output1.select("_2").toDF("_1"), "_1", filteruser)
 
     analysis.outputResult(indexrating, 1, "output/YelpTwoFilterUserandItemMoretan10Rating")
