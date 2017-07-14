@@ -22,9 +22,13 @@ class DataAnalysis(read:String) {
     var format1 = getdata.getRawPercentData(datapath,per)
     if(format.equals("csv"))
       format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    else if(format.equals("csv1"))
+      format1 = getdata.getCsvRawPercentData(datapath,",",per)
     val data = getdata.getUserItemRating(format1,user,item,rate)
     return data
   }
+
+
 
   /**
     * 从给定路径的数据集中获取用户商户id和评分，不做id转换
@@ -41,6 +45,14 @@ class DataAnalysis(read:String) {
     if(format.equals("csv"))
       format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
     val data = getdata.selectData(format1,user,item,rate)
+    return data
+  }
+
+  def itemLaLonAnalysisNotrans(datapath:String,item:String,la:String,lon:String, format:String,per:Double): DataFrame ={
+    var format1 = getdata.getRawPercentData(datapath,per)
+    if(format.equals("csv"))
+      format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    val data = getdata.selectData(format1,item,la,lon)
     return data
   }
 

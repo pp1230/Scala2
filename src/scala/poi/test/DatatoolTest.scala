@@ -366,8 +366,22 @@ object YelpRatingandTrustOutputTest{
     val indextrust = analysis.transformIdUsingIndexer(rating, "_1", friends)
     indexrating.show()
     indextrust.show()
-    analysis.outputResult(indexrating, 1, "output/DataAnalysisYelpUserItemTrust1")
-    analysis.outputResult(indextrust, 1, "output/DataAnalysisYelpUserItemTrust2")
+    //analysis.outputResult(indexrating, 1, "output/DataAnalysisYelpUserItemTrust1")
+    //analysis.outputResult(indextrust, 1, "output/DataAnalysisYelpUserItemTrust2")
+  }
+}
+
+object YelpLalonTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val rating = analysis.userItemRateAnalysisNotrans("input/useritemrating.json",
+      "business_id","user_id","stars","json",1)
+    val lalon = analysis.itemLaLonAnalysisNotrans("input/buslalo.json",
+      "business_id","latitude","longitude","json",1)
+    val userlalon = rating.join(lalon,"_1").toDF("itemid","userid","rating","la","lon")
+      .select("userid","la","lon")
+    userlalon.show()
+    userlalon.groupBy("userid").avg().show()
   }
 }
 //-------------------------------------------------------------------------------------------
@@ -406,10 +420,10 @@ object YelpTwoFilterRatingandTrustOutput{
     val analysis = new DataAnalysis("/home/pi/doc/dataset/")
     val filter1 = analysis.userItemRateFilterAnalysis(
       analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
-        "user_id","business_id","stars","json",1),"_1",">",10).toDF("userid","count")
+        "user_id","business_id","stars","json",1),"_1",">",20).toDF("userid","count")
     val filter2 = analysis.userItemRateFilterAnalysis(
       analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
-        "user_id","business_id","stars","json",1),"_2",">",10).toDF("itemid","count")
+        "user_id","business_id","stars","json",1),"_2",">",20).toDF("itemid","count")
     val data = analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
       "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
     val output1 = data.join(filter1,"userid").join(filter2,"itemid").toDF("_1","_2","_3","_4","_5")
@@ -424,8 +438,19 @@ object YelpTwoFilterRatingandTrustOutput{
       .join(users.select("_1").toDF("_2"),"_2")
     val indextrust = analysis.transformIdUsingIndexer(output1.select("_2").toDF("_1"), "_1", filteruser)
 
-    analysis.outputResult(indexrating, 1, "output/YelpTwoFilterUserandItemMoretan10Rating")
-    analysis.outputResult(indextrust, 1, "output/YelpTwoFilterUserandItemMoretan10Trust")
+    analysis.outputResult(indexrating, 1, "output/YelpTwoFilterUserandItemMoretan20Rating")
+    analysis.outputResult(indextrust, 1, "output/YelpTwoFilterUserandItemMoretan20Trust")
+  }
+}
+
+
+object DataAnalysisYelpUserandItem10{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val result = analysis.analyseSparsity(analysis.userItemRateAnalysis(
+      "output/YelpTwoFilterUserandItemMoretan20Rating/part-r-00000-bbc6b22c-a761-4a35-adb2-dabe04b43877.csv",
+      "_c0","_c1","_c2","csv1",1))
+    println("DataAnalysisYelpTest"+result)
   }
 }
 

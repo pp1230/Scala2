@@ -3,10 +3,12 @@
 {"user_id":"u1","business_id":"b2","stars":5.0}
 {"user_id":"u1","business_id":"b3","stars":3.0}
 {"user_id":"u1","business_id":"b4","stars":1.5}
-{"user_id":"u2","business_id":"b1","stars":4.0}
+{"user_id":"u2","business_id":"b5","stars":4.0}
 {"user_id":"u2","business_id":"b3","stars":5.0}
 {"user_id":"u2","business_id":"b5","stars":2.0}
 {"user_id":"u3","business_id":"b2","stars":5.0}
 {"user_id":"u4","business_id":"b1","stars":4.0}
 {"user_id":"u5","business_id":"b2","stars":2.0}
 {"user_id":"u1","business_id":"b5","stars":3.5}
+{"user_id":"u6","business_id":"b6","stars":4.0}
+{"user_id":"u6","business_id":"b1","stars":4.0}
