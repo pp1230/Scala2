@@ -1,5 +1,6 @@
 package scala.poi.datatool
 
+import org.apache.spark.ml.feature.{StringIndexerModel, StringIndexer}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
@@ -11,6 +12,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 从给定路径的数据集中获取用户商户id和评分
+    *
     * @param datapath 数据集路径
     * @param user 用户列名
     * @param item 商户列名
@@ -32,6 +34,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 从给定路径的数据集中获取用户商户id和评分，不做id转换
+    *
     * @param datapath 数据集路径
     * @param user 用户列名
     * @param item 商户列名
@@ -58,6 +61,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 将id转换为Integer
+    *
     * @param input
     * @param col1
     * @param col2
@@ -70,6 +74,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 使用特定数据集训练的Indexer转换给定的数据集，用于转换社交网络用户id
+    *
     * @param trainingdata 训练Indexer的数据集
     * @param trainingcol 训练的列名
     * @param input 需要转换的数据集（转换前两列）
@@ -81,8 +86,18 @@ class DataAnalysis(read:String) {
     return result
   }
 
+  def transformIdUsingIndexer(indexer:StringIndexerModel, input:DataFrame):DataFrame={
+    val result = getdata.getIndexingData(input,indexer)
+    return result
+  }
+
+  def getTransformIndexer(trainingdata:DataFrame, trainingcol: String): StringIndexerModel = {
+    return getdata.getIndexer(trainingdata, trainingcol)
+  }
+
   /**
     * 将用户的多个好友展开成一一对应的列
+    *
     * @param datapath 包含好友关系的数据集
     * @param user 用户列名
     * @param friends 好友数组列名
@@ -97,6 +112,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 从给定数据集中获取用户和商户的id和经纬度
+    *
     * @param datapath
     * @param user
     * @param item
@@ -116,6 +132,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 求平均，转换id
+    *
     * @param datapath
     * @param user
     * @param item
@@ -131,6 +148,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 求平均，不转换id
+    *
     * @param input
     * @param user
     * @param item
@@ -143,6 +161,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 计数并条件过滤（选择一列满足条件）
+    *
     * @param input 输入数据表
     * @param ob 过滤的列名
     * @param filter 过滤条件
@@ -168,6 +187,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 计数并条件过滤（两列同时满足）
+    *
     * @param input
     * @param ob1
     * @param ob2
@@ -194,6 +214,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 分析数据表
+    *
     * @param input 数据表
     * @return 稀疏度结果
     */
@@ -208,6 +229,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 输出结果（DataFrame）到指定目录
+    *
     * @param input
     * @param partition
     * @param writepath

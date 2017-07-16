@@ -184,7 +184,7 @@ class GetRandomData(base:String) {
           .withColumnRenamed("_11","_2")
     val result2 = indexer.transform(input2).withColumnRenamed("_1(indexed)","_2(indexed)")
       .withColumnRenamed("_11(indexed)","_1(indexed)").select("_1(indexed)","_2(indexed)","_3")
-          .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,r(2).toString.toInt))
+          .map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,r(2).toString.toDouble))
           .toDF("_1","_2","_3")
     //result2.show()
     return result2

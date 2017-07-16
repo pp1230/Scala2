@@ -1,5 +1,8 @@
 package scala.poi.test
 
+import breeze.numerics.{pow, sqrt}
+
+import scala.poi.algorithm.Absolute
 import scala.poi.datatool.{DataAnalysis, GetRandomData}
 
 /**
@@ -347,8 +350,8 @@ object YelpTwoFilterRatingandTrustOutputTest{
     val indextrust = analysis.transformIdUsingIndexer(output1.select("_2").toDF("_1"), "_1", filteruser)
     indexrating.show()
     indextrust.show()
-    analysis.outputResult(indexrating, 1, "output/YelpTwoFilterRatingandTrustOutputTest1")
-    analysis.outputResult(indextrust, 1, "output/YelpTwoFilterRatingandTrustOutputTest2")
+    //analysis.outputResult(indexrating, 1, "output/YelpTwoFilterRatingandTrustOutputTest1")
+    //analysis.outputResult(indextrust, 1, "output/YelpTwoFilterRatingandTrustOutputTest2")
   }
 }
 
@@ -371,17 +374,46 @@ object YelpRatingandTrustOutputTest{
   }
 }
 
-object YelpLalonTest{
+object YelpLalonTest {
   def main(args: Array[String]) {
     val analysis = new DataAnalysis("./src/data/")
     val rating = analysis.userItemRateAnalysisNotrans("input/useritemrating.json",
-      "business_id","user_id","stars","json",1)
+      "business_id", "user_id", "stars", "json", 1)
     val lalon = analysis.itemLaLonAnalysisNotrans("input/buslalo.json",
-      "business_id","latitude","longitude","json",1)
-    val userlalon = rating.join(lalon,"_1").toDF("itemid","userid","rating","la","lon")
-      .select("userid","la","lon")
+      "business_id", "latitude", "longitude", "json", 1)
+    val userlalon = rating.join(lalon, "_1").toDF("itemid", "userid", "rating", "la", "lon")
+      .select("userid", "la", "lon")
     userlalon.show()
-    userlalon.groupBy("userid").avg().show()
+    val useravg = userlalon.groupBy("userid").avg()
+    useravg.show()
+
+    val friends = analysis.userandFriendTrustAnalysis("input/userfriends.json",
+      "user_id", "friends", 1)
+    friends.show()
+    val user1lalon = useravg.toDF("_1", "la1", "lon1").join(friends, "_1")
+    user1lalon.show()
+    val user2lalon = user1lalon.join(useravg.toDF("_2", "la2", "lon2"), "_2")
+    user2lalon.show()
+    val result = user2lalon.select("_1", "_2", "la1", "lon1", "la2", "lon2")
+    result.show()
+
+//    val ss = SparkSession.builder().appName("Yelp Rating")
+//      .master("local[*]").getOrCreate()
+//    import ss.implicits._
+    //result.withColumn("x",pow($"la1"-$"la2")).show()
+    val avgrating = analysis.getAvg(rating,"_1","_2","_3").toDF("_2","_1","_3")
+    avgrating.show()
+    val loresult = result.withColumn("_3", (result.col("la1") - result.col("la2"))*(result.col("la1") - result.col("la2"))+
+      (result.col("lon1") - result.col("lon2"))*(result.col("lon1") - result.col("lon2"))).select("_1","_2","_3")
+    loresult.show()
+    val indexer = analysis.getTransformIndexer(avgrating, "_1")
+    val indexedresult = analysis.transformIdUsingIndexer(indexer, loresult)
+    indexedresult.show()
+    //将userid和itemid重复的记录计算平均分
+
+    val indexrating = analysis.transformId(avgrating, "_1","_2","_3")
+    indexrating.show()
+    //analysis.outputResult(result, 1, "output/DataAnalysisYelpUserItemLocTrust10")
   }
 }
 //-------------------------------------------------------------------------------------------
@@ -451,6 +483,50 @@ object DataAnalysisYelpUserandItem10{
       "output/YelpTwoFilterUserandItemMoretan20Rating/part-r-00000-bbc6b22c-a761-4a35-adb2-dabe04b43877.csv",
       "_c0","_c1","_c2","csv1",1))
     println("DataAnalysisYelpTest"+result)
+  }
+}
+
+object DataAnalysisYelpUserItemLocation{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val rating = analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+      "business_id", "user_id", "stars", "json", 1)
+    val lalon = analysis.itemLaLonAnalysisNotrans("textdata/yelp_academic_dataset_business.json",
+      "business_id", "latitude", "longitude", "json", 1)
+    val userlalon = rating.join(lalon, "_1").toDF("itemid", "userid", "rating", "la", "lon")
+      .select("userid", "la", "lon")
+    userlalon.show()
+    val useravg = userlalon.groupBy("userid").avg()
+    useravg.show()
+
+    val friends = analysis.userandFriendTrustAnalysis("textdata/yelp_academic_dataset_user.json",
+      "user_id", "friends", 1)
+    friends.show()
+    val user1lalon = useravg.toDF("_1", "la1", "lon1").join(friends, "_1")
+    user1lalon.show()
+    val user2lalon = user1lalon.join(useravg.toDF("_2", "la2", "lon2"), "_2")
+    user2lalon.show()
+    val result = user2lalon.select("_1", "_2", "la1", "lon1", "la2", "lon2")
+    result.show()
+
+    //    val ss = SparkSession.builder().appName("Yelp Rating")
+    //      .master("local[*]").getOrCreate()
+    //    import ss.implicits._
+    //result.withColumn("x",pow($"la1"-$"la2")).show()
+    val avgrating = analysis.getAvg(rating,"_1","_2","_3").toDF("_2","_1","_3")
+    avgrating.show()
+    val loresult = result.withColumn("_3", (result.col("la1") - result.col("la2"))*(result.col("la1") - result.col("la2"))+
+      (result.col("lon1") - result.col("lon2"))*(result.col("lon1") - result.col("lon2"))).select("_1","_2","_3")
+    loresult.show()
+    val indexer = analysis.getTransformIndexer(avgrating, "_1")
+    val indexedresult = analysis.transformIdUsingIndexer(indexer, loresult)
+    indexedresult.show()
+    //将userid和itemid重复的记录计算平均分
+
+    val indexrating = analysis.transformId(avgrating, "_1","_2","_3")
+    indexrating.show()
+    analysis.outputResult(indexedresult, 1, "output/DataAnalysisYelpUserItemLocTrustAll")
+    analysis.outputResult(indexrating, 1, "output/DataAnalysisYelpUserItemLocRatingAll")
   }
 }
 
