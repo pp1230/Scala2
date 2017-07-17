@@ -1,6 +1,6 @@
 package scala.poi.test
 
-import breeze.numerics.{pow, sqrt}
+import org.apache.spark.sql.functions._
 
 import scala.poi.algorithm.Absolute
 import scala.poi.datatool.{DataAnalysis, GetRandomData}
@@ -404,15 +404,16 @@ object YelpLalonTest {
     import org.apache.spark.sql.functions.lit
     val avgrating = analysis.getAvg(rating,"_1","_2","_3").toDF("_2","_1","_3")
     avgrating.show()
-    val loresult = result.withColumn("_3", ((result.col("la1") - result.col("la2"))*(result.col("la1") - result.col("la2"))+
-      (result.col("lon1") - result.col("lon2"))*(result.col("lon1") - result.col("lon2")))).select("_1","_2","_3")
+    val loresult = result.withColumn("_3", sqrt(pow((result.col("la1") - result.col("la2")), 2)+
+      pow((result.col("lon1") - result.col("lon2")),2))).select("_1","_2","_3")
     loresult.show()
     val indexer = analysis.getTransformIndexer(avgrating, "_1")
     val indexedresult = analysis.transformIdUsingIndexer(indexer, loresult)
-    val calresult1 = indexedresult.withColumn("_4", lit(1))
-    calresult1.show()
-    val calresult2 = calresult1.withColumn("_5", calresult1.col("_4")/(calresult1.col("_3")+0.000001)).select("_1","_2","_5")
-    calresult2.show()
+    indexedresult.show()
+//    val calresult1 = indexedresult.withColumn("_4", lit(1))
+//    calresult1.show()
+    val calresult = indexedresult.withColumn("_4", pow(exp(indexedresult.col("_3")*10)+1,-1)*2).select("_1","_2","_4")
+    calresult.show(false)
     //将userid和itemid重复的记录计算平均分
 
     val indexrating = analysis.transformId(avgrating, "_1","_2","_3")
@@ -517,23 +518,23 @@ object DataAnalysisYelpUserItemLocation{
     //      .master("local[*]").getOrCreate()
     //    import ss.implicits._
     //result.withColumn("x",pow($"la1"-$"la2")).show()
-    import org.apache.spark.sql.functions.lit
     val avgrating = analysis.getAvg(rating,"_1","_2","_3").toDF("_2","_1","_3")
     avgrating.show()
-    val loresult = result.withColumn("_3", ((result.col("la1") - result.col("la2"))*(result.col("la1") - result.col("la2"))+
-      (result.col("lon1") - result.col("lon2"))*(result.col("lon1") - result.col("lon2")))).select("_1","_2","_3")
+    val loresult = result.withColumn("_3", sqrt(pow((result.col("la1") - result.col("la2")), 2)+
+      pow((result.col("lon1") - result.col("lon2")),2))).select("_1","_2","_3")
     loresult.show()
     val indexer = analysis.getTransformIndexer(avgrating, "_1")
     val indexedresult = analysis.transformIdUsingIndexer(indexer, loresult)
-    val calresult1 = indexedresult.withColumn("_4", lit(1))
-    calresult1.show()
-    val calresult2 = calresult1.withColumn("_5", calresult1.col("_4")/(calresult1.col("_3")+0.000001)).select("_1","_2","_5")
-    calresult2.show()
+    indexedresult.show()
+    //    val calresult1 = indexedresult.withColumn("_4", lit(1))
+    //    calresult1.show()
+    val calresult = indexedresult.withColumn("_4", (pow(exp(indexedresult.col("_3")*10)+1,-1)*2)).select("_1","_2","_4")
+    calresult.show(false)
     //将userid和itemid重复的记录计算平均分
 
     val indexrating = analysis.transformId(avgrating, "_1","_2","_3")
     indexrating.show()
-    analysis.outputResult(calresult2, 1, "output/DataAnalysisYelpUserItemLocTrustAll")
+    analysis.outputResult(calresult, 1, "output/DataAnalysisYelpUserItemLocTrustAll")
     analysis.outputResult(indexrating, 1, "output/DataAnalysisYelpUserItemLocRatingAll")
   }
 }
