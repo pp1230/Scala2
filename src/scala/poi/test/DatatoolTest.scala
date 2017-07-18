@@ -412,7 +412,7 @@ object YelpLalonTest {
     indexedresult.show()
 //    val calresult1 = indexedresult.withColumn("_4", lit(1))
 //    calresult1.show()
-    val calresult = indexedresult.withColumn("_4", round(pow(exp(indexedresult.col("_3")*10)+1,-1)*2*10, 3)).select("_1","_2","_4")
+    val calresult = indexedresult.withColumn("_4", round(pow(exp(indexedresult.col("_3")*2)+1,-1)*2*10, 3)).select("_1","_2","_4")
     calresult.show(false)
     //将userid和itemid重复的记录计算平均分
 
@@ -528,7 +528,7 @@ object DataAnalysisYelpUserItemLocation{
     indexedresult.show()
     //    val calresult1 = indexedresult.withColumn("_4", lit(1))
     //    calresult1.show()
-    val calresult = indexedresult.withColumn("_4", round(pow(exp(indexedresult.col("_3")*10)+1,-1)*2*10, 3)).select("_1","_2","_4")
+    val calresult = indexedresult.withColumn("_4", round(pow(exp(indexedresult.col("_3")*2)+1,-1)*2*10, 3)).select("_1","_2","_4")
     calresult.show(false)
     //将userid和itemid重复的记录计算平均分
 
