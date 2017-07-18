@@ -421,6 +421,16 @@ object YelpLalonTest {
     //analysis.outputResult(result, 1, "output/DataAnalysisYelpUserItemLocTrust10")
   }
 }
+
+object DatafilterTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val result = analysis.userTrustFilterAnalysis(analysis.userItemRateAnalysisNotrans(
+      "input/trust.csv",
+      "_c0","_c1","_c2","csv1",1), "_3", ">", 0)
+    result.show()
+  }
+}
 //-------------------------------------------------------------------------------------------
 
 /**
@@ -491,6 +501,7 @@ object DataAnalysisYelpUserandItem10{
   }
 }
 
+
 object DataAnalysisYelpUserItemLocation{
   def main(args: Array[String]) {
     val analysis = new DataAnalysis("/home/pi/doc/dataset/")
@@ -536,6 +547,17 @@ object DataAnalysisYelpUserItemLocation{
     indexrating.show()
     analysis.outputResult(calresult, 1, "output/DataAnalysisYelpUserItemLocTrust1-10All")
     analysis.outputResult(indexrating, 1, "output/DataAnalysisYelpUserItemLocRating1-10All")
+  }
+}
+
+object Datafilter{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val result = analysis.userTrustFilterAnalysis(analysis.userItemRateAnalysisNotrans(
+      "output/DataAnalysisYelpUserItemLocRating1-10All/part-r-00000-5cf4c1ce-0f9f-47c5-8bb0-27eb75a44007.csv",
+      "_c0","_c1","_c2","csv1",1), "_3", ">", 0)
+    result.show()
+    analysis.outputResult(result, 1, "output/DataAnalysisYelpUserItemLocTrust1-10Morethan0")
   }
 }
 
