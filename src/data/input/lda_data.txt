@@ -1,0 +1,7 @@
+1,In natural language processing.
+2,latent Dirichlet allocation is a generative statistical model that allows sets of observations to be explained by unobserved groups that explain why some parts of the data are similar
+3,if observations are words collected into documents,
+4,it posits that each document is a mixture of a small number of topics and that each word's creation is attributable to one of the document's topics
+5,LDA is an example of a topic model and was first presented as a graphical model for topic discovery
+2,Jordan in 2003.[1] Essentially the same model was also proposed independently by in the study of population genetics in 2000
+4,Both papers have been highly influential, with 16488 and 18170 citations respectively by December 2016

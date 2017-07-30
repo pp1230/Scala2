@@ -1,10 +1,15 @@
 package scala.poi.datatool
 
-import org.apache.spark.ml.feature.{StringIndexerModel, StringIndexer}
+import org.apache.spark.ml.linalg.DenseVector
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.ml.feature._
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.{explode,lit}
+import org.apache.spark.sql.functions.{explode,lit,regexp_replace}
 import org.apache.log4j.{Level, Logger}
+
+import scala.poi.algorithm.LinearRegressionAl
+
 /**
   * Created by pi on 17-7-1.
   */
@@ -15,7 +20,81 @@ class GetRandomData(base:String) {
     .master("local[*]").getOrCreate()
   import ss.implicits._
   Logger.getLogger("org").setLevel(Level.WARN)
+//  var conf = new SparkConf().setAppName("Yelpdata").setMaster("local[*]")
+//  var sc = new SparkContext(conf)
+//  sc.setLogLevel("WARN")
 
+  def getLibsvmData(path:String):DataFrame = {
+    // Loads data.
+    val dataset = ss.read.format("libsvm")
+    .load(basedir+path)
+    return dataset
+  }
+
+  def textToVector(dataFrame: DataFrame,col: String):DataFrame={
+
+    val input = dataFrame.withColumn("replace",regexp_replace(dataFrame.col(col),"\\p{Punct}",""))
+    val token = new Tokenizer().setInputCol("replace").setOutputCol("token")
+    val data = token.transform(input)
+    val remover1 = new StopWordsRemover().setInputCol("token").setOutputCol("remove1").setStopWords(Array(" "))
+    val remove1 = remover1.transform(data)
+    val remover2 = new StopWordsRemover().setInputCol("remove1").setOutputCol("remove2")
+    val remove2 = remover2.transform(remove1)
+    val transformer = new CountVectorizer().setInputCol("remove2").setOutputCol("vector")
+    val vector = transformer.fit(remove2).transform(remove2)
+    return vector
+  }
+
+  def getTextData(path:String):DataFrame = {
+    // Loads data.
+    val dataset = ss.read.format("text")
+      .load(basedir+path)
+    return dataset
+  }
+
+  def getJsonData(path:String):DataFrame = {
+    // Loads data.
+    val dataset = ss.read.format("json")
+      .load(basedir+path)
+    return dataset
+  }
+
+  def getCsvData(path:String):DataFrame = {
+    // Loads data.
+    val dataset = ss.read.format("csv")
+      .load(basedir+path)
+    return dataset
+  }
+
+  def getParquetData(path:String):DataFrame = {
+    // Loads data.
+    val dataset = ss.read.format("parquet")
+      .load(basedir+path)
+    return dataset
+  }
+
+  def userRegression(input:DataFrame):String={
+
+    val regression = new LinearRegressionAl()
+//    var result = regression.transform(
+//      input.filter($"user_id" === "2"), "topicDistribution", "s")
+//    var result = sc.parallelize(Array("","")).toDF("topicDistribution","user_id","business_id","s")
+    var vector = new DenseVector(Array(1,2,3))
+    var data = List{(vector, "user","item",0,0)}
+    var result = ss.createDataFrame(data).toDF("topicDistribution","user_id","business_id","s","prediction")
+    println("---------result1-----------")
+    result.show()
+    input.select("user_id").distinct.collect().foreach(x => {
+      val userid = x.getAs[String]("user_id")
+      val selected = input.filter($"user_id" === userid)
+      if(selected.count()>1) {
+        result = result.union(regression.transform(selected, "topicDistribution", "s"))
+      }
+    })
+    println("---------result2-----------")
+    result.show()
+    return regression.evaluate(result)
+  }
   /**
     * 获得百分比yelp用户对商户评分数据，求平均
     *
@@ -56,6 +135,14 @@ class GetRandomData(base:String) {
     input.repartition(par).write.mode("overwrite").csv(base+writepath)
   }
 
+  def writeData(input:DataFrame, format:String, par:Int, writepath:String): Unit ={
+    if(format.equals("csv"))
+    input.repartition(par).write.mode("overwrite").csv(base+writepath)
+    else if(format.equals("json"))
+      input.repartition(par).write.mode("overwrite").json(base+writepath)
+    else if(format.equals("parquet"))
+      input.repartition(par).write.mode("overwrite").parquet(base+writepath)
+  }
   /**
     * 获得百分比原始数据
     *
@@ -86,6 +173,23 @@ class GetRandomData(base:String) {
     //trust.show()
     //val result = getUserItemRating(trust,"user_id","friends","trust")
     return trust
+  }
+
+
+  /**
+    * 将信任值转化为一
+    *
+    * @param input
+    * @param user1
+    * @param user2
+    * @return
+    */
+  def transformToTrust1(input:DataFrame, user1:String, user2:String, trust:String):DataFrame ={
+    val data = input.createOrReplaceTempView("table")
+    val filter = ss.sql("select * from table where "+trust+" >0")
+    //filter.show()
+    val result = filter.select(user1,user2).withColumn("trust", lit(1))
+    return result;
   }
 
   /**

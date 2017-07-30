@@ -10,6 +10,24 @@ class DataAnalysis(read:String) {
 
   var getdata = new GetRandomData(read)
 
+  def getData(path:String,format:String):DataFrame={
+    if(format.equals("libsvm"))
+    return getdata.getLibsvmData(path)
+    else if(format.equals("text"))
+      return getdata.getTextData(path)
+    else if(format.equals("csv"))
+      return getdata.getCsvData(path)
+    else if(format.equals("json"))
+      return getdata.getJsonData(path)
+    else if(format.equals("parquet"))
+      return getdata.getParquetData(path)
+    else null
+  }
+
+  def transTextToVector(dataFrame: DataFrame,col:String):DataFrame={
+    getdata.textToVector(dataFrame,col)
+  }
+
   /**
     * 从给定路径的数据集中获取用户商户id和评分
     *
@@ -47,7 +65,19 @@ class DataAnalysis(read:String) {
     var format1 = getdata.getRawPercentData(datapath,per)
     if(format.equals("csv"))
       format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    else if(format.equals("csv1"))
+      format1 = getdata.getCsvRawPercentData(datapath,",",per)
     val data = getdata.selectData(format1,user,item,rate)
+    return data
+  }
+
+  def userItemRateTextAnalysisNotrans(datapath:String, user:String,item:String,rate:String,text:String, format:String,per:Double): DataFrame ={
+    var format1 = getdata.getRawPercentData(datapath,per)
+    if(format.equals("csv"))
+      format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    else if(format.equals("csv1"))
+      format1 = getdata.getCsvRawPercentData(datapath,",",per)
+    val data = getdata.selectData(format1,user,item,rate,text)
     return data
   }
 
@@ -108,6 +138,11 @@ class DataAnalysis(read:String) {
     var raw = getdata.getRawPercentData(datapath,per)
     val data = getdata.getYelpUserFriendsTrustData(raw,user,friends)
     return data
+  }
+
+  def transformTrustValueToOne(dataFrame: DataFrame, user1:String, user2:String, trust:String):DataFrame = {
+    val result = getdata.transformToTrust1(dataFrame, user1, user2, trust)
+    return result
   }
 
   /**
@@ -212,6 +247,10 @@ class DataAnalysis(read:String) {
 
   }
 
+  def regression(input:DataFrame, t:String):String ={
+    getdata.userRegression(input)
+  }
+
   /**
     * 分析数据表
     *
@@ -236,6 +275,10 @@ class DataAnalysis(read:String) {
     */
   def outputResult(input:DataFrame, partition:Int, writepath:String): Unit ={
     getdata.writeData(input,partition,writepath)
+  }
+
+  def outputResult(input:DataFrame, format:String, partition:Int, writepath:String): Unit ={
+    getdata.writeData(input,format,partition,writepath)
   }
 
 
