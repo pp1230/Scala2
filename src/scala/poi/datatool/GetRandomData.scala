@@ -341,6 +341,25 @@ class GetRandomData(base:String) {
     return data
   }
 
+  def getUserTrustMoreThan(input:DataFrame, ob:String, num:Int): DataFrame = {
+    val select = input
+    select.createOrReplaceTempView("table")
+    val data = ss.sql("select * from table where "+ob+" > "+num)
+    return data
+  }
+  def getUserTrustEqualWith(input:DataFrame, ob:String, num:Int): DataFrame = {
+    val select = input
+    select.createOrReplaceTempView("table")
+    val data = ss.sql("select * from table where "+ob+" = "+num)
+    return data
+  }
+  def getUserTrustLessThan(input:DataFrame, ob:String, num:Int): DataFrame = {
+    val select = input
+    select.createOrReplaceTempView("table")
+    val data = ss.sql("select * from table where "+ob+" < "+num)
+    return data
+  }
+
   /**
     * 对两列进行group然后对计数列进行过滤
     *

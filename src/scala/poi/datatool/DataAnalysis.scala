@@ -85,6 +85,8 @@ class DataAnalysis(read:String) {
     var format1 = getdata.getRawPercentData(datapath,per)
     if(format.equals("csv"))
       format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    else if(format.equals("csv1"))
+      format1 = getdata.getCsvRawPercentData(datapath,",",per)
     val data = getdata.selectData(format1,item,la,lon)
     return data
   }
@@ -214,6 +216,23 @@ class DataAnalysis(read:String) {
     }
     else if(filter.equals("=")){
       val data = getdata.getUserCheckinEqualWith(input,ob,num)
+      return data
+    }
+    else return null
+
+  }
+
+  def userTrustFilterAnalysis(input:DataFrame, ob:String, filter:String, num:Int):DataFrame={
+    if(filter.equals(">")){
+      val data = getdata.getUserTrustMoreThan(input,ob,num)
+      return data
+    }
+    else if(filter.equals("<")){
+      val data = getdata.getUserTrustLessThan(input,ob,num)
+      return data
+    }
+    else if(filter.equals("=")){
+      val data = getdata.getUserTrustEqualWith(input,ob,num)
       return data
     }
     else return null
