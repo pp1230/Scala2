@@ -90,8 +90,11 @@ class GetRandomData(base:String) {
       val selected = input.filter($"user_id" === userid)
       if(selected.count()>n) {
         val Array(training,testing) = selected.randomSplit(Array(0.7,0.3))
-        if(training.count()>0)
-        result = result.union(regression.transform(testing,regression.fit(training,"topicDistribution","s")))
+        if(training.count()>0) {
+          val lr = regression.transform(testing,regression.fit(training,"topicDistribution","s"))
+          val filter = rangeColume(lr,"prediction")
+          result = result.union(filter)
+        }
       }
       else {
         var vector = new DenseVector(Array(1,2,3,4,5))
@@ -104,6 +107,7 @@ class GetRandomData(base:String) {
     result.show()
     return regression.evaluate(result)
   }
+
 
   def itemRegression(input:DataFrame,n:Int):String={
 
@@ -122,8 +126,11 @@ class GetRandomData(base:String) {
       val selected = input.filter($"business_id" === business_id)
       if(selected.count()>n) {
         val Array(training,testing) = selected.randomSplit(Array(0.7,0.3))
-        if(training.count()>0)
-          result = result.union(regression.transform(testing,regression.fit(training,"topicDistribution","s")))
+        if(training.count()>0) {
+          val lr = regression.transform(testing,regression.fit(training,"topicDistribution","s"))
+          val filter = rangeColume(lr,"prediction")
+          result = result.union(filter)
+        }
       }
       else {
         var vector = new DenseVector(Array(1,2,3,4,5))
@@ -136,6 +143,22 @@ class GetRandomData(base:String) {
     result.show()
     return regression.evaluate(result)
   }
+
+  def rangeColume(input:DataFrame, col:String):DataFrame={
+    input.createOrReplaceTempView("table")
+    val filter1 = ss.sql("select * from table where prediction >=1 and prediction <=5")
+      .toDF("topicDistribution","user_id","business_id","s",col)
+    val filter2 = ss.sql("select * from table where prediction <1 ")
+      .toDF("topicDistribution","user_id","business_id","s","prediction<1")
+    val filter3 = ss.sql("select * from table where prediction >5 ")
+      .toDF("topicDistribution","user_id","business_id","s","prediction>5")
+    val filter4 = filter2.withColumn(col, lit(1))
+      .select("topicDistribution","user_id","business_id","s",col)
+    val filter5 = filter3.withColumn(col, lit(5))
+      .select("topicDistribution","user_id","business_id","s",col)
+    return filter1.union(filter4).union(filter5)
+  }
+
   /**
     * 获得百分比yelp用户对商户评分数据，求平均
     *

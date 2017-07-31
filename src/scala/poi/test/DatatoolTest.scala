@@ -435,7 +435,7 @@ object LDAPersonalLinearResgressionTest{
     val lda = new LDAText().run(vector,"vector",5,10,3).select("topicDistribution","user_id","business_id","s")
     //    analysis.outputResult(lda,"parquet", 1,"output/lda")
     //    val result = new LinearRegressionAl().run(lda,"topicDistribution","s")
-    analysis.regression(lda,"user",5)
+    analysis.regression(lda,"user",1)
   }
 }
 
