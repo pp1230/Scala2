@@ -1,6 +1,8 @@
 package scala.poi.datatool
 
 import java.io.{File, PrintWriter}
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 /**
@@ -8,11 +10,18 @@ import java.io.{File, PrintWriter}
   */
 class WriteFile {
 
-  def write(path:String,s:String)={
-    val writer = new PrintWriter(new File(path))
+  def write(path:String,file:String,s:String)={
+    val writer = new PrintWriter(new File(path+file+getNowDate()))
 
     writer.write(s)
     writer.close()
+  }
+
+  def getNowDate():String={
+    var now:Date = new Date()
+    var  dateFormat:SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    var hehe = dateFormat.format( now )
+    hehe
   }
 
 }

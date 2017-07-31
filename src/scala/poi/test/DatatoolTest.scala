@@ -1,9 +1,10 @@
 package scala.poi.test
 
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.IntegerType
 
-import scala.poi.algorithm.Absolute
-import scala.poi.datatool.{DataAnalysis, GetRandomData}
+import scala.poi.algorithm.{LDAText, LinearRegressionAl, Absolute}
+import scala.poi.datatool.{WriteFile, DataAnalysis, GetRandomData}
 
 /**
   * Created by pi on 7/3/17.
@@ -77,7 +78,7 @@ object DataAnalysisTest1{
     val analysis = new DataAnalysis("/home/pi/doc/dataset/")
     val filter = analysis.userItemRateFilterAnalysis(
       analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
-      "user_id","business_id","stars","json",1),"_1",">",10).toDF("userid","count")
+        "user_id","business_id","stars","json",1),"_1",">",10).toDF("userid","count")
     val data = analysis.userItemRateAnalysis("textdata/yelp_academic_dataset_review.json",
       "user_id","business_id","stars","json",1).toDF("userid","itemid","starts")
     val output = data.join(filter,"userid").toDF("_1","_2","_3","_4")
@@ -337,8 +338,8 @@ object YelpTwoFilterRatingandTrustOutputTest{
     val friends = analysis.userandFriendTrustAnalysis("input/userfriends.json",
       "user_id","friends", 1)
     friends.show()
-//    val indexrating = analysis.getAvg(analysis.transformId(output1,"_2","_1","_3")
-//      ,"_1","_2","_3")
+    //    val indexrating = analysis.getAvg(analysis.transformId(output1,"_2","_1","_3")
+    //      ,"_1","_2","_3")
     val dropre = analysis.getAvg(output1.select("_2","_1","_3").toDF("_1","_2","_3"),"_1","_2","_3")
     dropre.show()
     val indexrating = analysis.transformId(dropre,"_1","_2","_3")
@@ -397,9 +398,9 @@ object YelpLalonTest {
     val result = user2lalon.select("_1", "_2", "la1", "lon1", "la2", "lon2")
     result.show()
 
-//    val ss = SparkSession.builder().appName("Yelp Rating")
-//      .master("local[*]").getOrCreate()
-//    import ss.implicits._
+    //    val ss = SparkSession.builder().appName("Yelp Rating")
+    //      .master("local[*]").getOrCreate()
+    //    import ss.implicits._
     //result.withColumn("x",pow($"la1"-$"la2")).show()
     import org.apache.spark.sql.functions.lit
     val avgrating = analysis.getAvg(rating,"_1","_2","_3").toDF("_2","_1","_3")
@@ -410,8 +411,8 @@ object YelpLalonTest {
     val indexer = analysis.getTransformIndexer(avgrating, "_1")
     val indexedresult = analysis.transformIdUsingIndexer(indexer, loresult)
     indexedresult.show()
-//    val calresult1 = indexedresult.withColumn("_4", lit(1))
-//    calresult1.show()
+    //    val calresult1 = indexedresult.withColumn("_4", lit(1))
+    //    calresult1.show()
     val calresult = indexedresult.withColumn("_4", round(pow(exp(indexedresult.col("_3")*10)+1,-1)*2*10, 3)).select("_1","_2","_4")
     calresult.show(false)
     //将userid和itemid重复的记录计算平均分
@@ -421,7 +422,150 @@ object YelpLalonTest {
     //analysis.outputResult(result, 1, "output/DataAnalysisYelpUserItemLocTrust10")
   }
 }
+
+object LDAPersonalLinearResgressionTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val dataset1 = analysis.getData("input/personal_lda_data","csv").toDF("user_id","business_id","stars","text")
+
+    val dataset = dataset1.withColumn( "s", dataset1.col("stars").cast(IntegerType))
+
+    val vector = analysis.transTextToVector(dataset,"text")
+    vector.show(false)
+    val lda = new LDAText().run(vector,"vector",5,10,3).select("topicDistribution","user_id","business_id","s")
+    //    analysis.outputResult(lda,"parquet", 1,"output/lda")
+    //    val result = new LinearRegressionAl().run(lda,"topicDistribution","s")
+    analysis.regression(lda,"item",1)
+  }
+}
+
+object LDALinearResgressionTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val dataset1 = analysis.getData("input/personal_lda_data","csv").toDF("user_id","stars","text")
+    val dataset2 = analysis.getData("input/lda_data.txt","csv").toDF("stars","text")
+    dataset2.show()
+    val dataset = dataset2.withColumn( "s", dataset2.col("stars").cast(IntegerType))
+    //    val result = new LinearRegressionAl().run(dataset1,"features","label")
+    val vector = analysis.transTextToVector(dataset,"text")
+    vector.show(false)
+    val lda = new LDAText().run(vector,"vector",5,10,3)
+    analysis.outputResult(lda,"parquet", 1,"output/lda")
+    val result = new LinearRegressionAl().run(lda,"topicDistribution","s")
+  }
+}
+
+object LinearRegressionTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val dataset1 = analysis.getData("output/lda/part-00000-6966d8fe-ac12-487b-a14f-7502280a18c5.snappy.parquet","parquet")
+    dataset1.show(false)
+    val result = new LinearRegressionAl().run(dataset1,"topicDistribution","s")
+  }
+}
+
+object WriteLog{
+  def main(args: Array[String]) {
+    val s = "test write file2"
+    new WriteFile().write("./src/data/output","testlog",s+"\n"+"!!!")
+  }
+}
+
 //-------------------------------------------------------------------------------------------
+
+/**
+  * 在user评论>10的基础上过滤item评论>10
+  */
+object YelpTextRegression11{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+
+    val filter1 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+        "user_id","business_id","stars","json",1),"_1",">",10).toDF("user_id","count")
+    val filter2 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+        "user_id","business_id","stars","json",1),"_2",">",10).toDF("business_id","count")
+    val data = analysis.userItemRateTextAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+      "user_id","business_id","stars","text","json",1).toDF("user_id","business_id","stars","text")
+    val output1 = data.join(filter1,"user_id").join(filter2,"business_id").select("user_id","business_id","stars","text")
+//    analysis.outputResult(filter1.select("user_id"),"parquet", 1, "output/YelpTextMorethan10User")
+//    analysis.outputResult(filter2.select("business_id"),"parquet", 1, "output/YelpTextMorethan10Item")
+    analysis.outputResult(output1,"parquet", 1, "output/YelpTextMorethan10Join")
+    val result = analysis.analyseSparsity(output1.toDF("_1","_2","_3","_4"))
+    println("YelpTextRegression1"+result)
+    new WriteFile().write("./src/data/output/","YelpTextRegression11",result)
+  }
+}
+
+/**
+  * 从原始数据上取出user评论>10和item>10的两个部分，做union并去重
+  */
+object YelpTextRegression12{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+
+    val filter1 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+        "user_id","business_id","stars","json",1),"_1",">",10).toDF("user_id","count")
+    val filter2 = analysis.userItemRateFilterAnalysis(
+      analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+        "user_id","business_id","stars","json",1),"_2",">",10).toDF("business_id","count")
+    val data = analysis.userItemRateTextAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+      "user_id","business_id","stars","text","json",1).toDF("user_id","business_id","stars","text")
+    val output1 = data.join(filter1,"user_id").select("user_id","business_id","stars","text")
+    val output2 = data.join(filter2,"business_id").select("user_id","business_id","stars","text")
+    val output3 = output1.union(output2).dropDuplicates()
+//    analysis.outputResult(filter1.select("user_id"),"parquet", 1, "output/YelpTextMorethan10User")
+//    analysis.outputResult(filter2.select("business_id"),"parquet", 1, "output/YelpTextMorethan10Item")
+    analysis.outputResult(output3,"parquet", 1, "output/YelpTextMorethan10Union")
+    val result = analysis.analyseSparsity(output1.toDF("_1","_2","_3","_4"))
+    println("YelpTextRegression1"+result)
+    new WriteFile().write("./src/data/output/","YelpTextRegression12",result)
+  }
+}
+
+/**
+  * 使用LDA计算特征分布，线性回归训练并测试模型
+  */
+object YelpTextRegression2{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val output1 = analysis.getData("output/YelpTextMorethan10Union/part-00000-f0a6fd64-d1cc-4a53-82b8-8bb50987d7f7.snappy.parquet","parquet")
+    output1.show(false)
+//    val output1 = analysis.getData("output/YelpTextMorethan10Union/part-00000-f0a6fd64-d1cc-4a53-82b8-8bb50987d7f7.snappy.parquet","parquet")
+//    output1.show(false)
+    val Array(training,testing) = output1.randomSplit(Array(1,0))
+    //    val rating = analysis.userItemRateTextAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+    //      "user_id","business_id","stars","text","json",0.0001).toDF("user_id","business_id","stars","text")
+    //    rating.show()
+    val dataset = training.withColumn( "s", training.col("stars").cast(IntegerType))
+    val vector = analysis.transTextToVector(dataset,"text")
+    vector.show()
+    val lda = new LDAText().run(vector,"vector",30,100,100).select("topicDistribution","user_id","business_id","s")
+    analysis.outputResult(lda,"parquet", 1, "output/YelpTextFeature1")
+    println("--------TotalRegression----------")
+    val result1 = new LinearRegressionAl().run(lda,"topicDistribution","s")
+    println("--------UserRegression----------")
+    val result2 = analysis.regression(lda,"user",1)
+    val result3 = analysis.regression(lda,"item",1)
+    new WriteFile().write("./src/data/output/","YelpTextRegression2","Union:"+"\n"+result1+"\n"+result2+"\n"+result3)
+
+  }
+}
+
+/**
+  * 基于User的个性化预测模型
+  */
+object YelpTextUserRegression {
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val output1 = analysis.getData("output/YelpTextFeature1/", "parquet")
+    output1.show(false)
+    //    val Array(training, testing) = output1.randomSplit(Array(1, 0))
+    //    analysis.regression(training,"user")
+  }
+}
 
 /**
   * 输出所有的Yelp用户商家评分及用户社交网络（trust=1）
@@ -488,6 +632,16 @@ object DataAnalysisYelpUserandItem10{
       "output/YelpTwoFilterUserandItemMoretan20Rating/part-r-00000-bbc6b22c-a761-4a35-adb2-dabe04b43877.csv",
       "_c0","_c1","_c2","csv1",1))
     println("DataAnalysisYelpTest"+result)
+  }
+}
+object TrustTransform{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val result = analysis.transformTrustValueToOne(analysis.userItemRateAnalysisNotrans(
+      "output/DataAnalysisYelpUserItemLocRating1-10All/part-00000-6b3c6717-ad37-4497-9b74-333e661948fc.csv",
+      "_c0","_c1","_c2","csv1",1),"_1","_2","_3")
+    result.show()
+    analysis.outputResult(result, 1, "output/DataAnalysisYelpUserItemLocTrust1All")
   }
 }
 

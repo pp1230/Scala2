@@ -1,7 +1,7 @@
 package scala.poi.algorithm
 
 import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.regression.LinearRegression
+import org.apache.spark.ml.regression.{LinearRegressionModel, LinearRegression}
 import org.apache.spark.sql._
 
 /**
@@ -11,26 +11,26 @@ class LinearRegressionAl {
 
   def run(data:DataFrame,featureCol:String,labelCol:String):DataFrame={
 
-    val result = transform(data,featureCol,labelCol)
+    val result = transform(data,fit(data,featureCol,labelCol))
 
     val e = evaluate(result)
 
     return result
   }
 
-  def transform(data:DataFrame,featureCol:String,labelCol:String):DataFrame={
-    val Array(training,testing) = data.randomSplit(Array(0.7,0.3))
-
+  def fit(dataFrame: DataFrame,featureCol:String,labelCol:String):LinearRegressionModel={
     val lr = new LinearRegression()
       .setMaxIter(10)
       .setRegParam(0.3)
       .setElasticNetParam(0.8)
-      .setFeaturesCol(featureCol)
-      .setLabelCol(labelCol)
-
+      .setFeaturesCol(featureCol).setLabelCol(labelCol)
 
     // Fit the model
-    val lrModel = lr.fit(training)
+    val lrModel = lr.fit(dataFrame)
+    return lrModel
+  }
+
+  def transform(data:DataFrame,lrModel:LinearRegressionModel):DataFrame={
 
     // Print the coefficients and intercept for linear regression
     println(s"Coefficients: ${lrModel.coefficients} Intercept: ${lrModel.intercept}")
@@ -43,7 +43,7 @@ class LinearRegressionAl {
     println(s"RMSE: ${trainingSummary.rootMeanSquaredError}")
     println(s"r2: ${trainingSummary.r2}")
 
-    val result = lrModel.transform(testing)
+    val result = lrModel.transform(data)
     result.show()
     return result
   }

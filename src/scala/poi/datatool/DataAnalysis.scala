@@ -266,8 +266,17 @@ class DataAnalysis(read:String) {
 
   }
 
-  def regression(input:DataFrame, t:String):String ={
-    getdata.userRegression(input)
+  /**
+    * 个性化回归
+    * @param input 含有tipic分布和label
+    * @param t 根据user还是item
+    * @param n 评论大于n
+    * @return
+    */
+  def regression(input:DataFrame, t:String,n:Int):String ={
+    if(t.equals("user"))
+    getdata.userRegression(input,n)
+    else getdata.itemRegression(input,n)
   }
 
   /**

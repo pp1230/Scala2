@@ -73,13 +73,13 @@ class GetRandomData(base:String) {
     return dataset
   }
 
-  def userRegression(input:DataFrame):String={
+  def userRegression(input:DataFrame,n:Int):String={
 
     val regression = new LinearRegressionAl()
 //    var result = regression.transform(
 //      input.filter($"user_id" === "2"), "topicDistribution", "s")
 //    var result = sc.parallelize(Array("","")).toDF("topicDistribution","user_id","business_id","s")
-    var vector = new DenseVector(Array(1,2,3))
+    var vector = new DenseVector(Array(1,2,3,4,5))
     var data = List{(vector, "user","item",0,0)}
     var result = ss.createDataFrame(data).toDF("topicDistribution","user_id","business_id","s","prediction")
     println("---------result1-----------")
@@ -87,8 +87,35 @@ class GetRandomData(base:String) {
     input.select("user_id").distinct.collect().foreach(x => {
       val userid = x.getAs[String]("user_id")
       val selected = input.filter($"user_id" === userid)
-      if(selected.count()>1) {
-        result = result.union(regression.transform(selected, "topicDistribution", "s"))
+      if(selected.count()>n) {
+        val Array(training,testing) = selected.randomSplit(Array(0.7,0.3))
+        if(training.count()>0)
+        result = result.union(regression.transform(testing,regression.fit(training,"topicDistribution","s")))
+      }
+    })
+    println("---------result2-----------")
+    result.show()
+    return regression.evaluate(result)
+  }
+
+  def itemRegression(input:DataFrame,n:Int):String={
+
+    val regression = new LinearRegressionAl()
+    //    var result = regression.transform(
+    //      input.filter($"user_id" === "2"), "topicDistribution", "s")
+    //    var result = sc.parallelize(Array("","")).toDF("topicDistribution","user_id","business_id","s")
+    var vector = new DenseVector(Array(1,2,3,4,5))
+    var data = List{(vector, "user","item",0,0)}
+    var result = ss.createDataFrame(data).toDF("topicDistribution","user_id","business_id","s","prediction")
+    println("---------result1-----------")
+    result.show()
+    input.select("business_id").distinct.collect().foreach(x => {
+      val userid = x.getAs[String]("business_id")
+      val selected = input.filter($"business_id" === userid)
+      if(selected.count()>n) {
+        val Array(training,testing) = selected.randomSplit(Array(0.7,0.3))
+        if(training.count()>0)
+          result = result.union(regression.transform(testing,regression.fit(training,"topicDistribution","s")))
       }
     })
     println("---------result2-----------")
