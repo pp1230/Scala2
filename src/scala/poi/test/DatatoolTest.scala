@@ -435,7 +435,7 @@ object LDAPersonalLinearResgressionTest{
     val lda = new LDAText().run(vector,"vector",5,10,3).select("topicDistribution","user_id","business_id","s")
     //    analysis.outputResult(lda,"parquet", 1,"output/lda")
     //    val result = new LinearRegressionAl().run(lda,"topicDistribution","s")
-    analysis.regression(lda,"item",1)
+    analysis.regression(lda,"user",5)
   }
 }
 
@@ -531,7 +531,7 @@ object YelpTextRegression12{
 object YelpTextRegression2{
   def main(args: Array[String]) {
     val analysis = new DataAnalysis("/home/pi/doc/dataset/")
-    val output1 = analysis.getData("output/YelpTextMorethan10Union/part-00000-f0a6fd64-d1cc-4a53-82b8-8bb50987d7f7.snappy.parquet","parquet")
+    val output1 = analysis.getData("output/YelpTextMorethan10Union/part-00000-7d28e5cb-5fd7-4cb5-a746-4dadbbc912a1.snappy.parquet","parquet")
     output1.show(false)
 //    val output1 = analysis.getData("output/YelpTextMorethan10Union/part-00000-f0a6fd64-d1cc-4a53-82b8-8bb50987d7f7.snappy.parquet","parquet")
 //    output1.show(false)
@@ -547,10 +547,20 @@ object YelpTextRegression2{
     println("--------TotalRegression----------")
     val result1 = new LinearRegressionAl().run(lda,"topicDistribution","s")
     println("--------UserRegression----------")
-    val result2 = analysis.regression(lda,"user",1)
-    val result3 = analysis.regression(lda,"item",1)
+    val result2 = analysis.regression(lda,"user",10)
+    val result3 = analysis.regression(lda,"item",10)
     new WriteFile().write("./src/data/output/","YelpTextRegression2","Union:"+"\n"+result1+"\n"+result2+"\n"+result3)
 
+  }
+}
+
+object YelpAvg{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val output1 = analysis.getData("output/YelpTextMorethan10Union/part-00000-7d28e5cb-5fd7-4cb5-a746-4dadbbc912a1.snappy.parquet","parquet")
+    output1.show(false)
+    val result = output1.select("stars").groupBy().avg().first().toString()
+    new WriteFile().write("./src/data/output/","YelpAvg","UnionAvg:"+result)
   }
 }
 

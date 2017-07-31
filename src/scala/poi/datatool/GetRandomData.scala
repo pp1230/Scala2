@@ -84,13 +84,20 @@ class GetRandomData(base:String) {
     var result = ss.createDataFrame(data).toDF("topicDistribution","user_id","business_id","s","prediction")
     println("---------result1-----------")
     result.show()
-    input.select("user_id").distinct.collect().foreach(x => {
+    input.select("user_id","s").distinct.collect().foreach(x => {
       val userid = x.getAs[String]("user_id")
+      val rate = x.getAs[Int]("s")
       val selected = input.filter($"user_id" === userid)
       if(selected.count()>n) {
         val Array(training,testing) = selected.randomSplit(Array(0.7,0.3))
         if(training.count()>0)
         result = result.union(regression.transform(testing,regression.fit(training,"topicDistribution","s")))
+      }
+      else {
+        var vector = new DenseVector(Array(1,2,3,4,5))
+        var data = List{(vector, userid,"business_id",rate,3.768)}
+        var r = ss.createDataFrame(data).toDF("topicDistribution","user_id","business_id","s","prediction")
+        result = result.union(r)
       }
     })
     println("---------result2-----------")
@@ -109,13 +116,20 @@ class GetRandomData(base:String) {
     var result = ss.createDataFrame(data).toDF("topicDistribution","user_id","business_id","s","prediction")
     println("---------result1-----------")
     result.show()
-    input.select("business_id").distinct.collect().foreach(x => {
-      val userid = x.getAs[String]("business_id")
-      val selected = input.filter($"business_id" === userid)
+    input.select("business_id","s").distinct.collect().foreach(x => {
+      val business_id = x.getAs[String]("business_id")
+      val rate = x.getAs[Int]("s")
+      val selected = input.filter($"business_id" === business_id)
       if(selected.count()>n) {
         val Array(training,testing) = selected.randomSplit(Array(0.7,0.3))
         if(training.count()>0)
           result = result.union(regression.transform(testing,regression.fit(training,"topicDistribution","s")))
+      }
+      else {
+        var vector = new DenseVector(Array(1,2,3,4,5))
+        var data = List{(vector, "user_id",business_id,rate,3.768)}
+        var r = ss.createDataFrame(data).toDF("topicDistribution","user_id","business_id","s","prediction")
+        result = result.union(r)
       }
     })
     println("---------result2-----------")
