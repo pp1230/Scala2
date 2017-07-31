@@ -71,6 +71,16 @@ class DataAnalysis(read:String) {
     return data
   }
 
+  def userItemRateAnalysisNotrans(datapath:String, user:String,rate:String,format:String,per:Double): DataFrame ={
+    var format1 = getdata.getRawPercentData(datapath,per)
+    if(format.equals("csv"))
+      format1 = getdata.getCsvRawPercentData(datapath,"\t",per)
+    else if(format.equals("csv1"))
+      format1 = getdata.getCsvRawPercentData(datapath,",",per)
+    val data = getdata.selectData(format1,user,rate)
+    return data
+  }
+
   def userItemRateTextAnalysisNotrans(datapath:String, user:String,item:String,rate:String,text:String, format:String,per:Double): DataFrame ={
     var format1 = getdata.getRawPercentData(datapath,per)
     if(format.equals("csv"))
@@ -139,6 +149,11 @@ class DataAnalysis(read:String) {
   def userandFriendTrustAnalysis(datapath:String, user:String, friends:String, per:Double):DataFrame ={
     var raw = getdata.getRawPercentData(datapath,per)
     val data = getdata.getYelpUserFriendsTrustData(raw,user,friends)
+    return data
+  }
+
+  def userandFriendTrustAnalysis(dataFrame: DataFrame, user:String, friends:String, per:Double):DataFrame ={
+    val data = getdata.getYelpUserFriendsTrustData(dataFrame,user,friends)
     return data
   }
 

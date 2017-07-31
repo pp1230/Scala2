@@ -20,9 +20,6 @@ class GetRandomData(base:String) {
     .master("local[*]").getOrCreate()
   import ss.implicits._
   Logger.getLogger("org").setLevel(Level.WARN)
-//  var conf = new SparkConf().setAppName("Yelpdata").setMaster("local[*]")
-//  var sc = new SparkContext(conf)
-//  sc.setLogLevel("WARN")
 
   def getLibsvmData(path:String):DataFrame = {
     // Loads data.
@@ -303,6 +300,9 @@ class GetRandomData(base:String) {
 
   def selectData(input:DataFrame, col1:String, col2:String, col3:String):DataFrame= {
     return input.select(col1,col2,col3).toDF("_1","_2","_3")
+  }
+  def selectData(input:DataFrame, col1:String, col2:String):DataFrame= {
+    return input.select(col1,col2).toDF("_1","_2")
   }
 
   def selectData(input:DataFrame, col1:String, col2:String, col3:String, col4:String):DataFrame= {

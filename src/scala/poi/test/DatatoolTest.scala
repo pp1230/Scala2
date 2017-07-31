@@ -1,9 +1,11 @@
 package scala.poi.test
 
+import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.graphx.GraphLoader
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
 
-import scala.poi.algorithm.{LDAText, LinearRegressionAl, Absolute}
+import scala.poi.algorithm.{SocialCluster, LDAText, LinearRegressionAl, Absolute}
 import scala.poi.datatool.{WriteFile, DataAnalysis, GetRandomData}
 
 /**
@@ -471,6 +473,13 @@ object WriteLog{
   }
 }
 
+object SocialCluster{
+  def main(args: Array[String]) {
+
+    new SocialCluster().run()
+  }
+}
+
 //-------------------------------------------------------------------------------------------
 
 /**
@@ -519,7 +528,7 @@ object YelpTextRegression12{
 //    analysis.outputResult(filter1.select("user_id"),"parquet", 1, "output/YelpTextMorethan10User")
 //    analysis.outputResult(filter2.select("business_id"),"parquet", 1, "output/YelpTextMorethan10Item")
     analysis.outputResult(output3,"parquet", 1, "output/YelpTextMorethan10Union")
-    val result = analysis.analyseSparsity(output1.toDF("_1","_2","_3","_4"))
+    val result = analysis.analyseSparsity(output3.toDF("_1","_2","_3","_4"))
     println("YelpTextRegression1"+result)
     new WriteFile().write("./src/data/output/","YelpTextRegression12",result)
   }
@@ -551,6 +560,30 @@ object YelpTextRegression2{
     val result3 = analysis.regression(lda,"item",10)
     new WriteFile().write("./src/data/output/","YelpTextRegression2","Union:"+"\n"+result1+"\n"+result2+"\n"+result3)
 
+  }
+}
+
+object YelpFriendsCluster{
+  def main(args: Array[String]) {
+
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val output1 = analysis.getData(
+      "output/YelpTextMorethan10Union/part-00000-088deffa-a8ed-4bd2-b6e8-703eb5fb464e-c000.snappy.parquet","parquet")
+      .select("user_id").dropDuplicates()
+    output1.show(false)
+    println("Uniondata:"+output1.count())
+    val friends = analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_user.json",
+      "user_id","friends","json", 1).select("_1","_2").toDF("user_id","friends")
+    friends.show()
+    println("Alldata:"+friends.count())
+
+    val filter = friends.join(output1,"user_id")
+    filter.show()
+    println("Filterdata:"+filter.count())
+    val result = analysis.userandFriendTrustAnalysis(filter, "user_id","friends", 1).select("_1","_2").toDF("user1","user2")
+    result.show()
+    analysis.outputResult(result,"parquet", 1, "output/YelpFriendsUnion")
+    println("Resultdata:"+result.count())
   }
 }
 
