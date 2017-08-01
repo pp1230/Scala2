@@ -1,5 +1,6 @@
 package scala.poi.datatool
 
+import org.apache.spark.graphx
 import org.apache.spark.ml.feature.{StringIndexerModel, StringIndexer}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -128,6 +129,12 @@ class DataAnalysis(read:String) {
     return result
   }
 
+  def transformIdUsingIndexer2(trainingdata:DataFrame, trainingcol:String, input:DataFrame):DataFrame={
+    val indexer = getdata.getIndexer(trainingdata, trainingcol)
+    val result = getdata.getIndexingData2(input,indexer)
+    return result
+  }
+
   def transformIdUsingIndexer(indexer:StringIndexerModel, input:DataFrame):DataFrame={
     val result = getdata.getIndexingData(input,indexer)
     return result
@@ -149,6 +156,11 @@ class DataAnalysis(read:String) {
   def userandFriendTrustAnalysis(datapath:String, user:String, friends:String, per:Double):DataFrame ={
     var raw = getdata.getRawPercentData(datapath,per)
     val data = getdata.getYelpUserFriendsTrustData(raw,user,friends)
+    return data
+  }
+
+  def userandFriendTrustAnalysis(input:DataFrame, user:String, friends:String):DataFrame ={
+    val data = getdata.getYelpUserFriendsTrustData(input,user,friends)
     return data
   }
 
@@ -283,6 +295,7 @@ class DataAnalysis(read:String) {
 
   /**
     * 个性化回归
+    *
     * @param input 含有tipic分布和label
     * @param t 根据user还是item
     * @param n 评论大于n
@@ -324,5 +337,11 @@ class DataAnalysis(read:String) {
     getdata.writeData(input,format,partition,writepath)
   }
 
+  def outputResult(input:DataFrame, format:String, sep:String,partition:Int, writepath:String): Unit ={
+    getdata.writeData(input,format,sep,partition,writepath)
+  }
 
+  def pairToDF(seq:Seq[(graphx.VertexId, graphx.VertexId)]):DataFrame={
+    getdata.toDF(seq)
+  }
 }

@@ -1,8 +1,9 @@
 package scala.poi.algorithm
 
 
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{graphx, SparkContext, SparkConf}
 import org.apache.spark.graphx.GraphLoader
+
 
 
 /**
@@ -14,12 +15,14 @@ class SocialCluster {
   var sc = new SparkContext(conf)
   sc.setLogLevel("WARN")
 
-  def run()={
+  def run(path:String):Seq[(graphx.VertexId, graphx.VertexId)]={
     // Load the graph as in the PageRank example
-    val graph = GraphLoader.edgeListFile(sc, "./src/data/input/followers.txt")
+    val graph = GraphLoader.edgeListFile(sc, path)
     // Find the connected components
     val cc = graph.connectedComponents().vertices
     cc.foreach(print(_))
+
+    return cc.collect().toSeq
 
 //    // Join the connected components with the usernames
 //    val users = sc.textFile("./src/data/input/users.txt").map { line =>

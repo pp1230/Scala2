@@ -3,7 +3,7 @@ package scala.poi.test
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.graphx.GraphLoader
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.IntegerType
+import org.apache.spark.sql.types.{DoubleType, IntegerType}
 
 import scala.poi.algorithm.{SocialCluster, LDAText, LinearRegressionAl, Absolute}
 import scala.poi.datatool.{WriteFile, DataAnalysis, GetRandomData}
@@ -476,11 +476,61 @@ object WriteLog{
 object SocialCluster{
   def main(args: Array[String]) {
 
-    new SocialCluster().run()
+    new SocialCluster().run("./src/data/input/followers.txt")
+  }
+}
+
+object FriendIndexingTest{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("./src/data/")
+    val rating = analysis.userItemRateAnalysisNotrans("input/useritemrating.json",
+      "user_id","business_id","stars","json",1)
+    rating.show()
+    val friends = analysis.userandFriendTrustAnalysis("input/userfriends.json",
+      "user_id","friends", 1)
+    friends.show()
+    val result = analysis.transformIdUsingIndexer(rating,"_1",friends)
+    result.show()
   }
 }
 
 //-------------------------------------------------------------------------------------------
+
+object YelpSocialFriendClusterOutput{
+  def main(args: Array[String]) {
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+////    val rating = analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
+////      "user_id","business_id","stars","json",1).select("_1","_2")
+////    rating.show()
+////    println(rating.count())
+//    val data = analysis.userItemRateAnalysisNotrans("textdata/yelp_academic_dataset_user","user_id","friends","json",1)
+//  .select("user_id","friends").toDF("_1","_2")
+//    data.show()
+//    println(data.count())
+//    val friends = analysis.userandFriendTrustAnalysis(data,"_1","_2")
+//    val friend1 = friends.select("_1")
+//    val friend2 = friends.select("_2")
+//    val friend3 = friend1.union(friend2).dropDuplicates()
+//    friend3.show()
+//    println(friend3.count())
+//    val indextrust = analysis.transformIdUsingIndexer2(friend3, "_1", friends)
+//    indextrust.show()
+//    analysis.outputResult(indextrust, 1, "output/YelpSocialFriendAll")
+    val friends = analysis.getData("output/DataAnalysisYelpUserTrust/part-00000-f6648f75-05b6-4077-a80d-cfa458b4ae15-c000.csv"
+  ,"csv").select("_c0","_c1")
+    friends.show()
+    analysis.outputResult(friends,"csv"," ",1,"output/Friends")
+  }
+}
+object YelpSocialFriendCluster{
+  def main(args: Array[String]) {
+    val result =  new SocialCluster().run("/home/pi/doc/dataset/output/Friends/part-00000-da2ad42b-1fed-4110-b696-49941d3ca191-c000.csv")
+    val analysis = new DataAnalysis("/home/pi/doc/dataset/")
+    val df = analysis.pairToDF(result)
+    df.show()
+    analysis.outputResult(df,"csv"," ",1,"output/Groups")
+  }
+}
 
 /**
   * 在user评论>10的基础上过滤item评论>10
@@ -533,6 +583,7 @@ object YelpTextRegression12{
     new WriteFile().write("./src/data/output/","YelpTextRegression12",result)
   }
 }
+
 
 /**
   * 使用LDA计算特征分布，线性回归训练并测试模型
@@ -633,6 +684,8 @@ object YelpRatingandTrustOutput{
     indextrust.show()
     analysis.outputResult(indexrating, 1, "output/DataAnalysisYelpUserItemAll")
     analysis.outputResult(indextrust, 1, "output/DataAnalysisYelpUserTrust")
+    new WriteFile().write("./src/data/output/","YelpRatingandTrustOutput","ratingcount:"+rating.count()
+      +"\n"+"friendcount"+friends.count())
   }
 }
 

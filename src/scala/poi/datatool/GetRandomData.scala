@@ -1,7 +1,7 @@
 package scala.poi.datatool
 
 import org.apache.spark.ml.linalg.DenseVector
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.graphx
 import org.apache.spark.ml.feature._
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -204,6 +204,15 @@ class GetRandomData(base:String) {
     else if(format.equals("parquet"))
       input.repartition(par).write.mode("overwrite").parquet(base+writepath)
   }
+
+  def writeData(input:DataFrame, format:String,sep:String, par:Int, writepath:String): Unit ={
+    if(format.equals("csv"))
+      input.repartition(par).write.mode("overwrite").option("sep",sep).csv(base+writepath)
+    else if(format.equals("json"))
+      input.repartition(par).write.mode("overwrite").option("sep",sep).json(base+writepath)
+    else if(format.equals("parquet"))
+      input.repartition(par).write.mode("overwrite").option("sep",sep).parquet(base+writepath)
+  }
   /**
     * 获得百分比原始数据
     *
@@ -358,6 +367,18 @@ class GetRandomData(base:String) {
     return result2
   }
 
+  def getIndexingData2(input:DataFrame, indexer:StringIndexerModel):DataFrame={
+    val result1 = indexer.transform(input).withColumnRenamed("_1(indexed)","_11(indexed)")
+    val input2 = result1.withColumnRenamed("_1","_11").withColumnRenamed("_2","_1")
+      .withColumnRenamed("_11","_2")
+    val result2 = indexer.transform(input2).withColumnRenamed("_1(indexed)","_2(indexed)")
+      .withColumnRenamed("_11(indexed)","_1(indexed)").select("_1(indexed)","_2(indexed)")
+      //.map(r=>(r(0).toString.toDouble.toInt,r(1).toString.toDouble.toInt,r(2).toString.toDouble))
+      .toDF("_1","_2")
+    //result2.show()
+    return result2
+  }
+
   def getIndexer(input:DataFrame,col: String): StringIndexerModel={
     val indexer = new StringIndexer()
       .setInputCol(col)
@@ -453,6 +474,10 @@ class GetRandomData(base:String) {
     select.createOrReplaceTempView("table")
     val data = ss.sql("select * from table where _3 = "+num)
     return data
+  }
+
+  def toDF(seq:Seq[(graphx.VertexId, graphx.VertexId)]):DataFrame={
+    ss.createDataFrame(seq)
   }
 
 }
