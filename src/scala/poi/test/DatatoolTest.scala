@@ -595,7 +595,7 @@ object YelpTextRegression2{
     output1.show(false)
 //    val output1 = analysis.getData("output/YelpTextMorethan10Union/part-00000-f0a6fd64-d1cc-4a53-82b8-8bb50987d7f7.snappy.parquet","parquet")
 //    output1.show(false)
-    val Array(training,testing) = output1.randomSplit(Array(1,0))
+    val Array(training,testing) = output1.randomSplit(Array(0.1,0.9))
     //    val rating = analysis.userItemRateTextAnalysisNotrans("textdata/yelp_academic_dataset_review.json",
     //      "user_id","business_id","stars","text","json",0.0001).toDF("user_id","business_id","stars","text")
     //    rating.show()
@@ -609,7 +609,7 @@ object YelpTextRegression2{
     println("--------UserRegression----------")
     val result2 = analysis.regression(lda,"user",10)
     val result3 = analysis.regression(lda,"item",10)
-    new WriteFile().write("./src/data/output/","YelpTextRegression2","Union:"+"\n"+result1+"\n"+result2+"\n"+result3)
+    new WriteFile().write("./src/data/output/","YelpTextRegression2-0.1","0.1Union:"+"\n"+result1+"\n"+result2+"\n"+result3)
 
   }
 }
